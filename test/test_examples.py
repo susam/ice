@@ -322,6 +322,7 @@ class ExamplesTest(unittest.TestCase):
         self.run_app()
 
         # Test
+        self.assert200('/', 'First name')
         form = {'firstName': 'Humpty', 'lastName': 'Dumpty'}
         data = urllib.parse.urlencode(form).encode()
         response = urllib.request.urlopen(
@@ -352,6 +353,7 @@ class ExamplesTest(unittest.TestCase):
         self.run_app()
 
         # Test
+        self.assert200('/', 'name1')
         form = (('name', 'Humpty'), ('name', 'Santa'))
         data = urllib.parse.urlencode(form).encode()
         response = urllib.request.urlopen(
