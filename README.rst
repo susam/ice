@@ -4,7 +4,7 @@ Ice - WSGI on the rocks
 Ice is a Python module with a WSGI microframework meant for developing
 small web applications in Python.
 
-.. image:: https://travis-ci.org/susam/ice.svg?branch=master
+.. image:: https://travis-ci.org/susam/ice.png?branch=master
    :target: https://travis-ci.org/susam/ice
 
 .. image:: https://coveralls.io/repos/susam/ice/badge.png?branch=master
