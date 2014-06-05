@@ -55,6 +55,10 @@ class RequestTest(unittest.TestCase):
         r = ice.Request({})
         self.assertEqual(r.path, '/')
 
+    def test_empty_path(self):
+        r = ice.Request({'PATH_INFO': ''})
+        self.assertEqual(r.path, '/')
+
     def test_query_with_two_names(self):
         r = ice.Request({'QUERY_STRING': 'a=foo&b=bar'})
         self.assertEqual(r.query.data, {'a': ['foo'], 'b': ['bar']})
