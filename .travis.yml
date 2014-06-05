@@ -1,0 +1,11 @@
+language: python
+python:
+    - "3.3"
+script:
+    - python -m unittest -v
+    - coverage run --branch -m test
+    - coverage report
+    - python setup.py install
+    - python setup.py sdist
+after_success:
+    - coveralls

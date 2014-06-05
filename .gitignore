@@ -1,0 +1,7 @@
+*.sw?
+/.coverage
+/install.txt
+__pycache__/
+/MANIFEST
+/dist/
+/build/
