@@ -761,7 +761,7 @@ handler should be invoked to generate an error page. If no argument is
 provided, the error handler is defined as a fallback error handler. A
 fallback error handler is invoked to generate an error page for any HTTP
 response representing an error when there is no error handler defined
-explicitly for the response tatus code of the HTTP response.
+explicitly for the response status code of the HTTP response.
 
 Here is an example.
 
