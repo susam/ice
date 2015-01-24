@@ -30,3 +30,4 @@ clean:
 	rm -rf build dist MANIFEST install.txt
 	rm -rf .coverage htmlcov
 	find . -name "__pycache__" -exec rm -r {} +
+	find . -name "*.pyc" -exec rm {} +
