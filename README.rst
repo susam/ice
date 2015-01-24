@@ -384,8 +384,8 @@ The following rules describe how a wildcard is interpreted.
 12. If *type* is ``int``, ``+int`` or ``-int``, the path of the request
     path matched by the wildcard is passed as an ``int`` object to the
     route's callable.
-13. If *type* is ``+int``, the wildcard matches a positive integer where
-    the positive integer beginning with a non-zero digit.
+13. If *type* is ``+int``, the wildcard matches a positive integer
+    beginning with a non-zero digit.
 14. If *type* is ``int``, the wildcard matches ``0`` as well as
     everything that a wildcard of type ``+int`` matches.
 15. If *type* is ``-int``, the wildcard matches a negative integer that
@@ -513,7 +513,6 @@ be interpreted, further rules are not processed.
    automatically interpreted as a wildcard route.
 6. If none of the above rules succeed in determining how to interpret
    the request path, then it is interpreted as a literal route.
-   literal route.
 
 The next three sections clarify the above rules with some contrived
 examples.
