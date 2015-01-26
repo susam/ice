@@ -186,6 +186,7 @@ class Ice:
             self.response.status = 404
         else:
             self.response.status = 501
+
         callback = self._get_error_page()
         if callback is not None:
             self.response.body = callback()
@@ -203,7 +204,8 @@ class Ice:
         elif None in self._error_handlers:
             return self._error_handlers[None]
         else:
-            return None
+            # Rudimentary error message if no error handler was found
+            return lambda: self.response.status_line
 
 
 class Router:

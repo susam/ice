@@ -60,6 +60,7 @@ class IceTest(unittest.TestCase):
         with self.assertRaises(urllib.error.HTTPError) as cm:
             urllib.request.urlopen('http://127.0.0.1:8080/foo')
         self.assertEqual(cm.exception.code, 404)
+        self.assertEqual(cm.exception.read(), b'404 Not Found')
 
     def test_get_route(self):
         @self.app.get('/foo')
@@ -93,6 +94,7 @@ class IceTest(unittest.TestCase):
         with self.assertRaises(urllib.error.HTTPError) as cm:
             urllib.request.urlopen('http://127.0.0.1:8080/foo')
         self.assertEqual(cm.exception.code, 501)
+        self.assertEqual(cm.exception.read(), b'501 Not Implemented')
 
     def test_error_callback(self):
         self.app.get('/')(mock.Mock())
