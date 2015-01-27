@@ -187,17 +187,13 @@ class Ice:
         else:
             self.response.status = 501
 
-        callback = self._get_error_page()
-        if callback is not None:
-            self.response.body = callback()
+        self.response.body = self._get_error_page_callback()()
         return self.response.response()
 
-    def _get_error_page(self):
+    def _get_error_page_callback(self):
         """Return an error page for the current response status.
         
-        Return: Callback; None if no callback is defined for the HTTP
-                response status code and no fallback callback is
-                defined.
+        Return: Callback that returns str (type: callable)
         """
         if self.response.status in self._error_handlers:
             return self._error_handlers[self.response.status]
