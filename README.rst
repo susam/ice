@@ -110,11 +110,11 @@ In this document, a request path is defined as the part of the URL after
 the domain name and before the query string. For example, in a request
 for http://localhost:8080/foo/bar?x=10, the request path is /foo/bar.
 
-A route is used to map an HTTP request made to an ice application to a
-Python callable. A route consists of three objects:
+A route is used to map an HTTP request to a Python callable. A route
+consists of three objects:
 
 1. HTTP request method, e.g. ``'GET'``, ``'POST'``.
-2. Request path pattern, e.g. ``'/foo'``, ``'/post/<id>'``, ``/(.*)``.
+2. Request path pattern, e.g. ``'/foo'``, ``'/post/<id>'``, ``'/(.*)'``.
 3. Callable, e.g. Python function
 
 A route is said to match a request path when the request pattern of the
@@ -172,8 +172,8 @@ text.
 
 However, visiting http://localhost:8080/foo/ or
 http://localhost:8080/foo/bar displays the '404 Not Found' page because
-the literal pattern ``'/foo'`` does not match ``'/foo/'`` or
-``'/foo/bar'``.
+the literal pattern ``'/foo'`` does not match the request path
+``'/foo/'`` or ``'/foo/bar'``.
 
 Wildcard routes
 ~~~~~~~~~~~~~~~
@@ -181,8 +181,8 @@ Anonymous wildcards
 '''''''''''''''''''
 The following code example is the simplest application demonstrating a
 wildcard route that matches request path of the form ``/`` followed by
-any string devoid of ``/``, ``<`` and ``>`` . The characters ``<>`` is
-an anonymous wildcard because there is no name associated with this
+any string devoid of ``/``, ``<`` and ``>``. The characters ``<>`` is an
+anonymous wildcard because there is no name associated with this
 wildcard. The part of the request path matched by an anonymous wildcard
 is passed as a positional argument to the route's callable.
 
@@ -320,7 +320,7 @@ is not passed to the route's callable. *They are thrown away!*
         app.run()
 
 After running this application, visiting http://localhost:8080/foo
-displays a page the following text.
+displays a page with the following text.
 
     | args: ()
     | kwargs: {}
@@ -364,7 +364,7 @@ The following rules describe how a wildcard is interpreted.
     are mandatory.
 2.  However, *name*, ``:`` (colon) and *type* are optional.
 3.  Either a valid Python identifier or the exclamation mark, ``!``,
-    should be used for *name*.
+    must be specified as *name*.
 4.  If *name* is missing, the part of the request path matched by the
     wildcard is passed as a positional argument to the route's callable.
 5.  If *name* is present and it is a valid Python identifier, the part
@@ -378,9 +378,9 @@ The following rules describe how a wildcard is interpreted.
 9.  If *type* is present but it is not ``str``, ``int``, ``+int`` and
     ``-int``, ice.RouteError is raised.
 10.  If *type* is missing, it is assumed to be ``str``.
-11. If *type* is ``str``, it matches a string not containing ``/``. The
-    path of the request path matched by the wildcard is passed as an
-    ``str`` object to the route's callable.
+11. If *type* is ``str``, it matches a string not containing ``/``,
+    ``<`` and ``>``. The path of the request path matched by the
+    wildcard is passed as an ``str`` object to the route's callable.
 12. If *type* is ``int``, ``+int`` or ``-int``, the path of the request
     path matched by the wildcard is passed as an ``int`` object to the
     route's callable.
@@ -487,7 +487,7 @@ groups are passed as positional arguments and parts of the request path
 matched by symbolic capturing groups are passed as keyword arguments to
 the route's callable, it is required by the Python language that all
 positional parameters must come before all keyword parameters in the
-function definition.  However, the capturing groups may appear in any
+function definition. However, the capturing groups may appear in any
 order in the route's pattern.
 
 Interpretation of request path pattern
@@ -504,9 +504,9 @@ be interpreted, further rules are not processed.
 3. If a route's request path pattern begins with ``literal:`` prefix,
    then it is interpreted as a literal route.
 4. If a route's request path pattern contains what looks like a
-   capturing group, i.e. it contains ``(`` before ``)`` somewhere in
-   the pattern, then it is automatically interpreted as a regular
-   expression route.
+   regular expression capturing group, i.e. it contains ``(`` before
+   ``)`` somewhere in the pattern, then it is automatically interpreted
+   as a regular expression route.
 5. If a route's request path pattern contains what looks like a
    wildcard, i.e. it contains ``<`` before ``>`` somewhere in the
    pattern with no ``/``, ``<`` and ``>`` in between them, then it is
@@ -554,7 +554,8 @@ Explicit wildcard routes
 To define a wildcard route with the request path pattern as
 ``/(foo)/<>``, the ``wildcard:`` prefix must be used. Without it, the
 pattern is interpreted as a regular expression pattern because the
-``(foo)`` in the pattern looks like a capturing group.
+``(foo)`` in the pattern looks like a regular expression capturing
+group.
 
 .. code:: python
 
