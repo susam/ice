@@ -377,3 +377,56 @@ class ExamplesTest(unittest.TestCase):
             urllib.request.urlopen('http://localhost:8080/foo')
         self.assertEqual(cm.exception.code, 404)
         self.assertIn(b'<p>Page not found</p>', cm.exception.read())
+
+    def test_set_status_code(self):
+        # Example
+        app = self.app
+        @app.get('/foo')
+        def foo():
+            app.response.status = 403
+            return ('<!DOCTYPE html>'
+                    '<html><head><title>Access is forbidden</title></head>'
+                    '<body><p>Access is forbidden</p></body></html>')
+        self.run_app()
+
+        # Test
+        with self.assertRaises(urllib.error.HTTPError) as cm:
+            urllib.request.urlopen('http://localhost:8080/foo')
+        self.assertEqual(cm.exception.code, 403)
+        self.assertIn(b'<p>Access is forbidden</p>', cm.exception.read())
+
+    def test_return_status_code_and_error_handler(self):
+        # Example
+        app = self.app
+        @app.get('/foo')
+        def foo():
+            return 403
+
+        @app.error(403)
+        def error403():
+            return ('<!DOCTYPE html>'
+                    '<html><head><title>Access is forbidden</title></head>'
+                    '<body><p>Access is forbidden</p></body></html>')
+        self.run_app()
+
+        # Test
+        with self.assertRaises(urllib.error.HTTPError) as cm:
+            urllib.request.urlopen('http://localhost:8080/foo')
+        self.assertEqual(cm.exception.code, 403)
+        self.assertIn(b'<p>Access is forbidden</p>', cm.exception.read())
+
+    def test_return_status_code_only(self):
+        # Example
+        app = self.app
+        @app.get('/foo')
+        def foo():
+            return 403
+        self.run_app()
+
+        # Test
+        with self.assertRaises(urllib.error.HTTPError) as cm:
+            urllib.request.urlopen('http://localhost:8080/foo')
+        self.assertEqual(cm.exception.code, 403)
+        self.assertIn(b'<h1>403 Forbidden</h1>\n<p>Request forbidden '
+                      b'-- authorization will not help</p>\n',
+                      cm.exception.read())

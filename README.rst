@@ -23,11 +23,11 @@ depend on any third party libraries.
 
 Installation
 ------------
-You can install this package using pip3 using the following command. ::
+You can install this module using pip3 using the following command. ::
 
     pip3 install ice
 
-You can install this package from source distribution. To do so,
+You can install this module from source distribution. To do so,
 download the latest .tar.gz file from https://pypi.python.org/pypi/ice,
 extract it, then open command prompt or shell, and change your current
 directory to the directory where you extracted the source distribution,
@@ -750,9 +750,9 @@ in both input fields as a list object.
 Error pages
 -----------
 The application object returned by the ``ice.cube`` function contains a
-generic fallback error handler that displays a simple error page with
-the HTTP status line, a short description of the status and the version
-of the ice package.
+generic fallback error handler that returns a simple error page with the
+HTTP status line, a short description of the status and the version of
+the ice module.
 
 This error handler may be overridden using the ``error`` decorator. This
 decorator accepts one optional integer argument that may be used to
@@ -783,3 +783,120 @@ After running this application, visiting http://localhost:8080/foo
 displays a page with the following text.
 
     | Page not found
+
+HTTP status codes
+-----------------
+In all the examples above, the response message body is returned as a
+string from a route's callable. It is also possible to return the
+response status code as an integer. In other words, a route's callable
+must either return a string or an integer. When a string is returned, it
+is sent as response message body to the client. When an integer is
+returned and it is a valid HTTP status code, an HTTP response with this
+status code is sent to the client. If the value returned by a route's
+callable is neither a string nor an integer representing a valid HTTP
+status code, then an error is raised.
+
+Therefore there are two ways to return an HTTP response from a route's
+callable.
+
+1. Return message body and optionally set status code. This is the
+   preferred way of returning content for normal HTTP responses (200
+   OK). If the status code is not set explicitly in a route's callable,
+   then it has a default value of 200.
+2. Return status code and optionally set message body. This is the
+   preferred way of returning content for HTTP errors. If the message
+   body is not set explicitly in a route's callable, then the error
+   handler for the returned status code is invoked to return a message
+   body.
+
+Here is an example where status code is set to 403 and a custom
+error page is returned.
+
+..code:: python
+
+    import ice
+
+    app = ice.cube()
+
+    @app.get('/foo')
+    def foo():
+        app.response.status = 403
+        return ('<!DOCTYPE html>'
+                '<html><head><title>Access is forbidden</title></head>'
+                '<body><p>Access is forbidden</p></body></html>')
+
+    if __name__ == '__main__':
+        app.run()
+
+After running this application, visiting http://localhost:8080/foo
+displays a page with the following text.
+
+    | Access is forbidden
+
+Here is another way of writing the above application. In this case, the
+message body is set and the status code is returned.
+
+..code:: python
+
+    import ice
+
+    app = ice.cube()
+
+    @app.get('/foo')
+    def foo():
+        app.response.body = ('<!DOCTYPE html>'
+                '<html><head><title>Access is forbidden</title></head>'
+                '<body><p>Access is forbidden</p></body></html>')
+        return 403
+
+    if __name__ == '__main__':
+        app.run()
+
+Although the above way of setting message body works, using an error
+handler is the preferred way of defining the message body for an HTTP
+error. Here is an example that demonstrates this.
+
+..code:: python
+
+    import ice
+
+    app = ice.cube()
+
+    @app.get('/foo')
+    def foo():
+        return 403
+
+    @app.error(403)
+    def error403():
+        return ('<!DOCTYPE html>'
+                '<html><head><title>Access is forbidden</title></head>'
+                '<body><p>Access is forbidden</p></body></html>')
+
+    if __name__ == '__main__':
+        app.run()
+
+For simple web applications, just returning the status code is
+sufficient. When neither a message body is defined nor an error handler
+is defined, a generic fallback error handler set in the application
+object returned by the ``ice.cube`` is used to return a simple error
+page with the HTTP status line, a short description of the status and
+the version of the ice module.
+
+..code:: python
+
+    import ice
+
+    app = ice.cube()
+
+    @app.get('/foo')
+    def foo():
+        return 403
+
+    if __name__ == '__main__':
+        app.run()
+
+After running this application, visiting http://localhost:8080/foo
+displays a page with the following text.
+
+    | 403 Forbidden
+    | Request forbidden -- authorization will not help
