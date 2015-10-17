@@ -48,7 +48,14 @@ import http.server
 
 
 def cube():
-    """Return an Ice application with a default home page."""
+    """Return an Ice application with a default home page.
+
+    This function returns an object of class Ice. It creates an Ice
+    object, adds a route to return the default page when a client
+    requests / using HTTP GET method, adds an error handler to return
+    HTTP error pages when an error occurs and returns this object. The
+    returned object may be used as a WSGI application.
+    """
     app = Ice()
         
     @app.get('/')
@@ -82,8 +89,8 @@ class Ice:
 
     """A single WSGI application.
 
-    Each instance of this class is a single, distinct WSGI application
-    callable object.
+    Each instance of this class is a single, distinct callable object
+    that functions as WSGI application.
     """
 
     def __init__(self):
@@ -179,15 +186,23 @@ class Ice:
                                     self.request.path)
         if route is not None:
             callback, args, kwargs = route
-            self.response.body = callback(*args, **kwargs)
-            return self.response.response()
-
-        if self.router.contains_method(self.request.method):
-            self.response.status = 404
+            value = callback(*args, **kwargs)
+        elif self.router.contains_method(self.request.method):
+            value = 404 # Not found
         else:
-            self.response.status = 501
+            value = 501 # Not Implemented
 
-        self.response.body = self._get_error_page_callback()()
+        if isinstance(value, str):
+            self.response.body = value
+        elif isinstance(value, int) and value in Response.responses:
+            self.response.status = value
+            if self.response.body == '':
+                self.response.body = self._get_error_page_callback()()
+        else:
+            raise Error('Route callback for {} {} returned invalid '
+                        'value: {}: {!r}'.format(self.request.method,
+                        self.request.path, type(value).__name__, value))
+
         return self.response.response()
 
     def _get_error_page_callback(self):
@@ -631,9 +646,9 @@ class MultiDict(collections.UserDict):
         return self.data[key] if key in self.data else default
 
 
-class IceError(Exception):
+class Error(Exception):
     """Base class for exceptions used by ice."""
 
 
-class RouteError(IceError):
+class RouteError(Error):
     """Route related exception."""
