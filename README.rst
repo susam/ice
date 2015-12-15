@@ -144,15 +144,15 @@ with a custom page. Additionally, it sets up a route for /foo.
 
     @app.get('/')
     def home():
-        return '<!DOCTYPE html>' \
-               '<html><head><title>Home</title></head>' \
-               '<body><p>Home</p></body></html>'
+        return ('<!DOCTYPE html>'
+                '<html><head><title>Home</title></head>'
+                '<body><p>Home</p></body></html>')
 
     @app.get('/foo')
     def foo():
-        return '<!DOCTYPE html>' \
-               '<html><head><title>Foo</title></head>' \
-               '<body><p>Foo</p></body></html>'
+        return ('<!DOCTYPE html>'
+                '<html><head><title>Foo</title></head>'
+                '<body><p>Foo</p></body></html>')
 
     if __name__ == '__main__':
         app.run()
@@ -193,9 +193,9 @@ is passed as a positional argument to the route's callable.
 
     @app.get('/<>')
     def foo(a):
-        return '<!DOCTYPE html>' \
-               '<html><head><title>' + a + '</title></head>' \
-               '<body><p>' + a + '</p></body></html>'
+        return ('<!DOCTYPE html>'
+                '<html><head><title>' + a + '</title></head>'
+                '<body><p>' + a + '</p></body></html>')
 
     if __name__ == '__main__':
         app.run()
@@ -230,9 +230,9 @@ wildcard, to the route's callable.
 
     @app.get('/<a>')
     def foo(a):
-        return '<!DOCTYPE html>' \
-               '<html><head><title>' + a + '</title></head>' \
-               '<body><p>' + a + '</p></body></html>'
+        return ('<!DOCTYPE html>'
+                '<html><head><title>' + a + '</title></head>'
+                '<body><p>' + a + '</p></body></html>')
 
     if __name__ == '__main__':
         app.run()
@@ -250,10 +250,10 @@ differently from the matches due to named wildcards.
 
     @app.get('/foo/<>-<>/<a>-<b>/<>-<c>')
     def foo(*args, **kwargs):
-        return '<!DOCTYPE html>' \
-               '<html><head><title>Example</title></head><body>' \
-               '<p>args: {}<br>kwargs: {}</p>' \
-               '</body></html>'.format(args, kwargs)
+        return ('<!DOCTYPE html> '
+                '<html><head><title>Example</title></head><body> '
+                '<p>args: {}<br>kwargs: {}</p> '
+                '</body></html>').format(args, kwargs)
 
     if __name__ == '__main__':
         app.run()
@@ -275,10 +275,10 @@ and named wildcard may be used together.
 
     @app.get('/<user>/<category>/<>')
     def page(page_id, user, category):
-        return '<!DOCTYPE html>' \
-               '<html><head><title>Example</title></head><body>' \
-               '<p>page_id: {}<br>user: {}<br>category: {}</p>' \
-               '</body></html>'.format(page_id, user, category)
+        return ('<!DOCTYPE html>'
+                '<html><head><title>Example</title></head><body> '
+                '<p>page_id: {}<br>user: {}<br>category: {}</p> '
+                '</body></html>').format(page_id, user, category)
 
     if __name__ == '__main__':
         app.run()
@@ -311,10 +311,10 @@ is not passed to the route's callable. *They are thrown away!*
 
     @app.get('/<!>')
     def foo(*args, **kwargs):
-        return '<!DOCTYPE html>' \
-               '<html><head><title>Example</title></head><body>' \
-               '<p>args: {}<br>kwargs: {}</p>' \
-               '</body></html>'.format(args, kwargs)
+        return ('<!DOCTYPE html>'
+                '<html><head><title>Example</title></head><body>'
+                '<p>args: {}<br>kwargs: {}</p>'
+                '</body></html>').format(args, kwargs)
 
     if __name__ == '__main__':
         app.run()
@@ -336,10 +336,10 @@ wildcard may be used with other wildcards.
 
     @app.get('/<!>/<!>/<>')
     def page(page_id):
-        return '<!DOCTYPE html>' \
-               '<html><head><title>Example</title></head><body>' \
-               '<p>page_id: ' + page_id + '</p>' \
-               '</body></html>'
+        return ('<!DOCTYPE html>'
+                '<html><head><title>Example</title></head><body>'
+                '<p>page_id: ' + page_id + '</p>'
+                '</body></html>')
 
     if __name__ == '__main__':
         app.run()
@@ -402,9 +402,9 @@ wildcard.
 
     @app.get('/notes/<:int>')
     def note(note_id):
-        return '<!DOCTYPE html>' \
-               '<html><head><title>Example</title></head><body>' \
-               '<p>note_id: {}</p></body></html>'.format(note_id)
+        return ('<!DOCTYPE html>'
+                '<html><head><title>Example</title></head><body>'
+                '<p>note_id: {}</p></body></html>').format(note_id)
 
     if __name__ == '__main__':
         app.run()
@@ -438,9 +438,9 @@ is passed as a positional argument to the route's callable.
 
     @app.get('/(.*)')
     def foo(a):
-        return '<!DOCTYPE html>' \
-               '<html><head><title>' + a + '</title></head>' \
-               '<body><p>' + a + '</p></body></html>'
+        return ('<!DOCTYPE html>'
+                '<html><head><title>' + a + '</title></head>'
+                '<body><p>' + a + '</p></body></html>')
 
     if __name__ == '__main__':
         app.run()
@@ -466,10 +466,10 @@ name as that of the symbolic group.
 
     @app.get('/(?P<user>[^/]*)/(?P<category>[^/]*)/([^/]*)')
     def page(page_id, user, category):
-        return '<!DOCTYPE html>' \
-               '<html><head><title>Example</title></head><body>' \
-               '<p>page_id: {}<br>user: {}<br>category: {}</p>' \
-               '</body></html>'.format(page_id, user, category)
+        return ('<!DOCTYPE html>'
+                '<html><head><title>Example</title></head><body>'
+                '<p>page_id: {}<br>user: {}<br>category: {}</p>'
+                '</body></html>').format(page_id, user, category)
 
     if __name__ == '__main__':
         app.run()
@@ -532,9 +532,9 @@ defined as a literal pattern.
 
     @app.get('literal:/<foo>')
     def foo():
-        return '<!DOCTYPE html>' \
-               '<html><head><title>Foo</title></head>' \
-               '<body><p>Foo</p></body></html>'
+        return ('<!DOCTYPE html>'
+                '<html><head><title>Foo</title></head>'
+                '<body><p>Foo</p></body></html>')
 
     if __name__ == '__main__':
         app.run()
@@ -564,9 +564,9 @@ group.
 
     @app.get('wildcard:/(foo)/<>')
     def foo(a):
-        return '<!DOCTYPE html>' \
-               '<html><head><title>Foo</title></head>' \
-               '<body><p>a: ' + a + '</p></body></html>'
+        return ('<!DOCTYPE html>'
+                '<html><head><title>Foo</title></head>'
+                '<body><p>a: ' + a + '</p></body></html>')
 
     if __name__ == '__main__':
         app.run()
@@ -592,11 +592,11 @@ capturing group in the pattern.
     import ice
     app = ice.cube()
 
-    @app.get('regex:/foo\d*')
+    @app.get('regex:/foo\d*$')
     def foo():
-        return '<!DOCTYPE html>' \
-               '<html><head><title>Foo</title></head>' \
-               '<body><p>Foo</p></body></html>'
+        return ('<!DOCTYPE html>'
+                '<html><head><title>Foo</title></head>'
+                '<body><p>Foo</p></body></html>')
 
     if __name__ == '__main__':
         app.run()
@@ -623,10 +623,10 @@ string in a GET request.
 
     @app.get('/')
     def home():
-        return '<!DOCTYPE html>' \
-               '<html><head><title>Foo</title></head>' \
-               '<body><p>name: {}</p></body>' \
-               '</html>'.format(app.request.query['name'])
+        return ('<!DOCTYPE html>'
+                '<html><head><title>Foo</title></head>'
+                '<body><p>name: {}</p></body>'
+                '</html>').format(app.request.query['name'])
 
     if __name__ == '__main__':
         app.run()
@@ -661,10 +661,10 @@ values for a key in ``app.request.query``, we can use the
 
     @app.get('/')
     def home():
-        return '<!DOCTYPE html>' \
-               '<html><head><title>Foo</title></head>' \
-               '<body><p>name: {}</p></body>' \
-               '</html>'.format(app.request.query.getall('name'))
+        return ('<!DOCTYPE html>'
+                '<html><head><title>Foo</title></head>'
+                '<body><p>name: {}</p></body>'
+                '</html>').format(app.request.query.getall('name'))
 
     if __name__ == '__main__':
         app.run()
@@ -689,21 +689,21 @@ submitted by a POST request.
 
     @app.get('/')
     def show_form():
-        return '<!DOCTYPE html>' \
-               '<html><head><title>Foo</title></head>' \
-               '<body><form action="/result" method="post">' \
-               'First name: <input name="firstName"><br>' \
-               'Last name: <input name="lastName"><br>' \
-               '<input type="submit">' \
-               '</form></body></html>'
+        return ('<!DOCTYPE html>'
+                '<html><head><title>Foo</title></head>'
+                '<body><form action="/result" method="post">'
+                'First name: <input name="firstName"><br>'
+                'Last name: <input name="lastName"><br>'
+                '<input type="submit">'
+                '</form></body></html>')
 
     @app.post('/result')
     def show_post():
-        return '<!DOCTYPE html>' \
-               '<html><head><title>Foo</title></head><body>' \
-               '<p>First name: {}<br>Last name: {}</p>' \
-               '</body></html>'.format(app.request.form['firstName'],
-                                       app.request.form['lastName'])
+        return ('<!DOCTYPE html>'
+                '<html><head><title>Foo</title></head><body>'
+                '<p>First name: {}<br>Last name: {}</p>'
+                '</body></html>').format(app.request.form['firstName'],
+                                         app.request.form['lastName'])
 
     if __name__ == '__main__':
         app.run()
@@ -722,21 +722,21 @@ object.
 
     @app.get('/')
     def show_form():
-        return '<!DOCTYPE html>' \
-               '<html><head><title>Foo</title></head>' \
-               '<body><form action="/result" method="post">' \
-               'name1: <input name="name"><br>' \
-               'name2: <input name="name"><br>' \
-               '<input type="submit">' \
-               '</form></body></html>'
+        return ('<!DOCTYPE html>'
+                '<html><head><title>Foo</title></head>'
+                '<body><form action="/result" method="post">'
+                'name1: <input name="name"><br>'
+                'name2: <input name="name"><br>'
+                '<input type="submit">'
+                '</form></body></html>')
 
     @app.post('/result')
     def show_post():
-        return '<!DOCTYPE html>' \
-               '<html><head><title>Foo</title></head><body>' \
-               '<p>name (single): {}<br>name (multi): {}</p>' \
-               '</body></html>'.format(app.request.form['name'],
-                                       app.request.form.getall('name'))
+        return ('<!DOCTYPE html>'
+                '<html><head><title>Foo</title></head><body>'
+                '<p>name (single): {}<br>name (multi): {}</p>'
+                '</body></html>').format(app.request.form['name'],
+                                         app.request.form.getall('name'))
 
     if __name__ == '__main__':
         app.run()
@@ -772,9 +772,9 @@ Here is an example.
 
     @app.error(404)
     def error():
-        return '<!DOCTYPE html>' \
-               '<html><head><title>Page not found</title></head>' \
-               '<body><p>Page not found</p></body></html>'
+        return ('<!DOCTYPE html>'
+                '<html><head><title>Page not found</title></head>'
+                '<body><p>Page not found</p></body></html>')
 
     if __name__ == '__main__':
         app.run()

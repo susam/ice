@@ -70,15 +70,25 @@ class ExamplesTest(unittest.TestCase):
         app = self.app
         @app.get('/')
         def home():
-            return '<!DOCTYPE html>' \
-                   '<html><head><title>Home</title></head>' \
-                   '<body><p>Home</p></body></html>'
+            return ('<!DOCTYPE html>'
+                    '<html><head><title>Home</title></head>'
+                    '<body><p>Home</p></body></html>')
 
         @app.get('/foo')
         def foo():
-            return '<!DOCTYPE html>' \
-                   '<html><head><title>Foo</title></head>' \
-                   '<body><p>Foo</p></body></html>'
+            return ('<!DOCTYPE html>'
+                    '<html><head><title>Foo</title></head>'
+                    '<body><p>Foo</p></body></html>')
+            def home():
+                return ('<!DOCTYPE html>'
+                        '<html><head><title>Home</title></head>'
+                        '<body><p>Home</p></body></html>')
+
+            @app.get('/foo')
+            def foo():
+                return ('<!DOCTYPE html>'
+                        '<html><head><title>Foo</title></head>'
+                        '<body><p>Foo</p></body></html>')
         # Test
         self.run_app()
         self.assert200('/', '<p>Home</p>')
@@ -91,9 +101,9 @@ class ExamplesTest(unittest.TestCase):
         app = self.app
         @app.get('/<>')
         def foo(a):
-            return '<!DOCTYPE html>' \
-                   '<html><head><title>' + a + '</title></head>' \
-                   '<body><p>' + a + '</p></body></html>'
+            return ('<!DOCTYPE html>'
+                    '<html><head><title>' + a + '</title></head>'
+                    '<body><p>' + a + '</p></body></html>')
         self.run_app()
 
         # Test
@@ -107,9 +117,9 @@ class ExamplesTest(unittest.TestCase):
         app = self.app
         @app.get('/<a>')
         def foo(a):
-            return '<!DOCTYPE html>' \
-                   '<html><head><title>' + a + '</title></head>' \
-                   '<body><p>' + a + '</p></body></html>'
+            return ('<!DOCTYPE html>'
+                    '<html><head><title>' + a + '</title></head>'
+                    '<body><p>' + a + '</p></body></html>')
         self.run_app()
 
         # Test
@@ -123,10 +133,10 @@ class ExamplesTest(unittest.TestCase):
         app = self.app
         @app.get('/foo/<>-<>/<a>-<b>/<>-<c>')
         def foo(*args, **kwargs):
-            return '<!DOCTYPE html>' \
-                   '<html><head><title>Example</title></head><body>' \
-                   '<p>args: {}<br>kwargs: {}</p>' \
-                   '</body></html>'.format(args, kwargs)
+            return ('<!DOCTYPE html> '
+                    '<html><head><title>Example</title></head><body> '
+                    '<p>args: {}<br>kwargs: {}</p> '
+                    '</body></html>').format(args, kwargs)
         self.run_app()
 
         # Test
@@ -139,10 +149,10 @@ class ExamplesTest(unittest.TestCase):
         app = self.app
         @app.get('/<user>/<category>/<>')
         def page(page_id, user, category):
-            return '<!DOCTYPE html>' \
-                   '<html><head><title>Example</title></head><body>' \
-                   '<p>page_id: {}<br>user: {}<br>category: {}</p>' \
-                   '</body></html>'.format(page_id, user, category)
+            return ('<!DOCTYPE html>'
+                    '<html><head><title>Example</title></head><body> '
+                    '<p>page_id: {}<br>user: {}<br>category: {}</p> '
+                    '</body></html>').format(page_id, user, category)
         self.run_app()
 
         # Test
@@ -155,10 +165,10 @@ class ExamplesTest(unittest.TestCase):
         app = self.app
         @app.get('/<!>')
         def foo(*args, **kwargs):
-            return '<!DOCTYPE html>' \
-                   '<html><head><title>Example</title></head><body>' \
-                   '<p>args: {}<br>kwargs: {}</p>' \
-                   '</body></html>'.format(args, kwargs)
+            return ('<!DOCTYPE html>'
+                    '<html><head><title>Example</title></head><body>'
+                    '<p>args: {}<br>kwargs: {}</p>'
+                    '</body></html>').format(args, kwargs)
         self.run_app()
 
         # Test
@@ -169,10 +179,10 @@ class ExamplesTest(unittest.TestCase):
         app = self.app
         @app.get('/<!>/<!>/<>')
         def page(page_id):
-            return '<!DOCTYPE html>' \
-                   '<html><head><title>Example</title></head><body>' \
-                   '<p>page_id: ' + page_id + '</p>' \
-                   '</body></html>'
+            return ('<!DOCTYPE html>'
+                    '<html><head><title>Example</title></head><body>'
+                    '<p>page_id: ' + page_id + '</p>'
+                    '</body></html>')
         self.run_app()
 
         # Test
@@ -184,9 +194,9 @@ class ExamplesTest(unittest.TestCase):
         app = self.app
         @app.get('/notes/<:int>')
         def note(note_id):
-            return '<!DOCTYPE html>' \
-                   '<html><head><title>Example</title></head><body>' \
-                   '<p>note_id: {}</p></body></html>'.format(note_id)
+            return ('<!DOCTYPE html>'
+                    '<html><head><title>Example</title></head><body>'
+                    '<p>note_id: {}</p></body></html>').format(note_id)
         self.run_app()
 
         # Test
@@ -201,9 +211,9 @@ class ExamplesTest(unittest.TestCase):
         app = self.app
         @app.get('/(.*)')
         def foo(a):
-            return '<!DOCTYPE html>' \
-                   '<html><head><title>' + a + '</title></head>' \
-                   '<body><p>' + a + '</p></body></html>'
+            return ('<!DOCTYPE html>'
+                    '<html><head><title>' + a + '</title></head>'
+                    '<body><p>' + a + '</p></body></html>')
         self.run_app()
 
         # Test
@@ -215,10 +225,10 @@ class ExamplesTest(unittest.TestCase):
         app = self.app
         @app.get('/(?P<user>[^/]*)/(?P<category>[^/]*)/([^/]*)')
         def page(page_id, user, category):
-            return '<!DOCTYPE html>' \
-                   '<html><head><title>Example</title></head><body>' \
-                   '<p>page_id: {}<br>user: {}<br>category: {}</p>' \
-                   '</body></html>'.format(page_id, user, category)
+            return ('<!DOCTYPE html>'
+                    '<html><head><title>Example</title></head><body>'
+                    '<p>page_id: {}<br>user: {}<br>category: {}</p>'
+                    '</body></html>').format(page_id, user, category)
         self.run_app()
 
         # Test
@@ -231,9 +241,9 @@ class ExamplesTest(unittest.TestCase):
         app = self.app
         @app.get('literal:/<foo>')
         def foo():
-            return '<!DOCTYPE html>' \
-                   '<html><head><title>Foo</title></head>' \
-                   '<body><p>Foo</p></body></html>'
+            return ('<!DOCTYPE html>'
+                    '<html><head><title>Foo</title></head>'
+                    '<body><p>Foo</p></body></html>')
         self.run_app()
 
         # Test
@@ -245,9 +255,9 @@ class ExamplesTest(unittest.TestCase):
         app = self.app
         @app.get('wildcard:/(foo)/<>')
         def foo(a):
-            return '<!DOCTYPE html>' \
-                   '<html><head><title>Foo</title></head>' \
-                   '<body><p>a: ' + a + '</p></body></html>'
+            return ('<!DOCTYPE html>'
+                    '<html><head><title>Foo</title></head>'
+                    '<body><p>a: ' + a + '</p></body></html>')
         self.run_app()
 
         # Test
@@ -259,9 +269,9 @@ class ExamplesTest(unittest.TestCase):
         app = self.app
         @app.get('regex:/foo\d*$')
         def foo():
-            return '<!DOCTYPE html>' \
-                   '<html><head><title>Foo</title></head>' \
-                   '<body><p>Foo</p></body></html>'
+            return ('<!DOCTYPE html>'
+                    '<html><head><title>Foo</title></head>'
+                    '<body><p>Foo</p></body></html>')
         self.run_app()
 
         # Test
@@ -274,10 +284,10 @@ class ExamplesTest(unittest.TestCase):
         app = self.app
         @app.get('/')
         def home():
-            return '<!DOCTYPE html>' \
-                   '<html><head><title>Foo</title></head>' \
-                   '<body><p>name: {}</p></body>' \
-                   '</html>'.format(app.request.query['name'])
+            return ('<!DOCTYPE html>'
+                    '<html><head><title>Foo</title></head>'
+                    '<body><p>name: {}</p></body>'
+                    '</html>').format(app.request.query['name'])
         self.run_app()
 
         # Test
@@ -289,10 +299,10 @@ class ExamplesTest(unittest.TestCase):
         app = self.app
         @app.get('/')
         def home():
-            return '<!DOCTYPE html>' \
-                   '<html><head><title>Foo</title></head>' \
-                   '<body><p>name: {}</p></body>' \
-                   '</html>'.format(app.request.query.getall('name'))
+            return ('<!DOCTYPE html>'
+                    '<html><head><title>Foo</title></head>'
+                    '<body><p>name: {}</p></body>'
+                    '</html>').format(app.request.query.getall('name'))
         self.run_app()
 
         # Test
@@ -304,21 +314,21 @@ class ExamplesTest(unittest.TestCase):
         app = self.app
         @app.get('/')
         def show_form():
-            return '<!DOCTYPE html>' \
-                   '<html><head><title>Foo</title></head>' \
-                   '<body><form action="/result" method="post">' \
-                   'First name: <input name="firstName"><br>' \
-                   'Last name: <input name="lastName"><br>' \
-                   '<input type="submit">' \
-                   '</form></body></html>'
+            return ('<!DOCTYPE html>'
+                    '<html><head><title>Foo</title></head>'
+                    '<body><form action="/result" method="post">'
+                    'First name: <input name="firstName"><br>'
+                    'Last name: <input name="lastName"><br>'
+                    '<input type="submit">'
+                    '</form></body></html>')
 
         @app.post('/result')
         def show_post():
-            return '<!DOCTYPE html>' \
-                   '<html><head><title>Foo</title></head><body>' \
-                   '<p>First name: {}<br>Last name: {}</p>' \
-                   '</body></html>'.format(app.request.form['firstName'],
-                                           app.request.form['lastName'])
+            return ('<!DOCTYPE html>'
+                    '<html><head><title>Foo</title></head><body>'
+                    '<p>First name: {}<br>Last name: {}</p>'
+                    '</body></html>').format(app.request.form['firstName'],
+                                             app.request.form['lastName'])
         self.run_app()
 
         # Test
@@ -335,21 +345,21 @@ class ExamplesTest(unittest.TestCase):
         app = self.app
         @app.get('/')
         def show_form():
-            return '<!DOCTYPE html>' \
-                   '<html><head><title>Foo</title></head>' \
-                   '<body><form action="/result" method="post">' \
-                   'name1: <input name="name"><br>' \
-                   'name2: <input name="name"><br>' \
-                   '<input type="submit">' \
-                   '</form></body></html>'
+            return ('<!DOCTYPE html>'
+                    '<html><head><title>Foo</title></head>'
+                    '<body><form action="/result" method="post">'
+                    'name1: <input name="name"><br>'
+                    'name2: <input name="name"><br>'
+                    '<input type="submit">'
+                    '</form></body></html>')
 
         @app.post('/result')
         def show_post():
-            return '<!DOCTYPE html>' \
-                   '<html><head><title>Foo</title></head><body>' \
-                   '<p>name (single): {}<br>name (multi): {}</p>' \
-                   '</body></html>'.format(app.request.form['name'],
-                                           app.request.form.getall('name'))
+            return ('<!DOCTYPE html>'
+                    '<html><head><title>Foo</title></head><body>'
+                    '<p>name (single): {}<br>name (multi): {}</p>'
+                    '</body></html>').format(app.request.form['name'],
+                                             app.request.form.getall('name'))
         self.run_app()
 
         # Test
@@ -358,7 +368,7 @@ class ExamplesTest(unittest.TestCase):
         data = urllib.parse.urlencode(form).encode()
         response = urllib.request.urlopen(
                    'http://localhost:8080/result', data)
-        self.assertIn(b'<p>name (single): Santa<br>' \
+        self.assertIn(b'<p>name (single): Santa<br>'
                       b"name (multi): ['Humpty', 'Santa']</p>",
                       response.read() )
 
@@ -367,9 +377,9 @@ class ExamplesTest(unittest.TestCase):
         app = self.app
         @app.error(404)
         def error():
-            return '<!DOCTYPE html>' \
-                   '<html><head><title>Page not found</title></head>' \
-                   '<body><p>Page not found</p></body></html>'
+            return ('<!DOCTYPE html>'
+                    '<html><head><title>Page not found</title></head>'
+                    '<body><p>Page not found</p></body></html>')
         self.run_app()
 
         # Test
@@ -387,6 +397,23 @@ class ExamplesTest(unittest.TestCase):
             return ('<!DOCTYPE html>'
                     '<html><head><title>Access is forbidden</title></head>'
                     '<body><p>Access is forbidden</p></body></html>')
+        self.run_app()
+
+        # Test
+        with self.assertRaises(urllib.error.HTTPError) as cm:
+            urllib.request.urlopen('http://localhost:8080/foo')
+        self.assertEqual(cm.exception.code, 403)
+        self.assertIn(b'<p>Access is forbidden</p>', cm.exception.read())
+
+    def test_set_body_and_return_status_code(self):
+        # Example
+        app = self.app
+        @app.get('/foo')
+        def foo():
+            app.response.body = ('<!DOCTYPE html>'
+                    '<html><head><title>Access is forbidden</title></head>'
+                    '<body><p>Access is forbidden</p></body></html>')
+            return 403
         self.run_app()
 
         # Test

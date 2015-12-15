@@ -580,8 +580,8 @@ class Response:
 
         Return: Status line (type: str)
         """
-        return str(self.status) + ' ' + \
-               Response.responses[self.status].phrase
+        return (str(self.status) + ' ' +
+                Response.responses[self.status].phrase)
 
     @property
     def status_detail(self):
