@@ -66,8 +66,9 @@ class ExamplesTest(unittest.TestCase):
         self.assert404('/foo')
 
     def test_literal_route_example(self):
-        # Example
         app = self.app
+
+        # Example
         @app.get('/')
         def home():
             return ('<!DOCTYPE html>'
@@ -97,109 +98,116 @@ class ExamplesTest(unittest.TestCase):
         self.assert404('/bar')
 
     def test_anonymous_wildcard_example(self):
-        # Example
         app = self.app
+
+        # Example
         @app.get('/<>')
         def foo(a):
             return ('<!DOCTYPE html>'
                     '<html><head><title>' + a + '</title></head>'
                     '<body><p>' + a + '</p></body></html>')
-        self.run_app()
 
         # Test
+        self.run_app()
         self.assert200('/foo', '<p>foo</p>')
         self.assert200('/bar', '<p>bar</p>')
         self.assert404('/foo/')
         self.assert404('/foo/bar')
 
     def test_named_wildcard_example1(self):
-        # Example
         app = self.app
+
+        # Example
         @app.get('/<a>')
         def foo(a):
             return ('<!DOCTYPE html>'
                     '<html><head><title>' + a + '</title></head>'
                     '<body><p>' + a + '</p></body></html>')
-        self.run_app()
 
         # Test
+        self.run_app()
         self.assert200('/foo', '<p>foo</p>')
         self.assert200('/bar', '<p>bar</p>')
         self.assert404('/foo/')
         self.assert404('/foo/bar')
 
     def test_named_wildcard_example2(self):
-        # Example
         app = self.app
+
+        # Example
         @app.get('/foo/<>-<>/<a>-<b>/<>-<c>')
         def foo(*args, **kwargs):
             return ('<!DOCTYPE html> '
                     '<html><head><title>Example</title></head><body> '
                     '<p>args: {}<br>kwargs: {}</p> '
                     '</body></html>').format(args, kwargs)
-        self.run_app()
 
         # Test
+        self.run_app()
         self.assert200('/foo/hello-world/ice-cube/wsgi-rocks',
                        "args: ('hello', 'world', 'wsgi')",
                        "'a': 'ice'", "'b': 'cube'", "'c': 'rocks'")
 
     def test_named_wildcard_example3(self):
-        # Example
         app = self.app
+
+        # Example
         @app.get('/<user>/<category>/<>')
         def page(page_id, user, category):
             return ('<!DOCTYPE html>'
                     '<html><head><title>Example</title></head><body> '
                     '<p>page_id: {}<br>user: {}<br>category: {}</p> '
                     '</body></html>').format(page_id, user, category)
-        self.run_app()
 
         # Test
+        self.run_app()
         self.assert200('/snowman/articles/python',
                        '<p>page_id: python<br>user: snowman<br>'
                        'category: articles</p>')
 
     def test_throwaway_wildcard_example1(self):
-        # Example
         app = self.app
+
+        # Example
         @app.get('/<!>')
         def foo(*args, **kwargs):
             return ('<!DOCTYPE html>'
                     '<html><head><title>Example</title></head><body>'
                     '<p>args: {}<br>kwargs: {}</p>'
                     '</body></html>').format(args, kwargs)
-        self.run_app()
 
         # Test
+        self.run_app()
         self.assert200('/foo', '<p>args: ()<br>kwargs: {}</p>')
 
     def test_throwaway_wildcard_example2(self):
-        # Example
         app = self.app
+
+        # Example
         @app.get('/<!>/<!>/<>')
         def page(page_id):
             return ('<!DOCTYPE html>'
                     '<html><head><title>Example</title></head><body>'
                     '<p>page_id: ' + page_id + '</p>'
                     '</body></html>')
-        self.run_app()
 
         # Test
+        self.run_app()
         self.assert200('/snowman/articles/python',
                        '<p>page_id: python</p>')
 
     def test_wildcard_specification_example(self):
-        # Example
         app = self.app
+
+        # Example
         @app.get('/notes/<:int>')
         def note(note_id):
             return ('<!DOCTYPE html>'
                     '<html><head><title>Example</title></head><body>'
                     '<p>note_id: {}</p></body></html>').format(note_id)
-        self.run_app()
 
         # Test
+        self.run_app()
         self.assert200('/notes/12', '<p>note_id: 12</p>')
         self.assert200('/notes/0', '<p>note_id: 0</p>')
         self.assert404('/notes/+12')
@@ -207,46 +215,49 @@ class ExamplesTest(unittest.TestCase):
         self.assert404('/notes/012')
 
     def test_regex_route_example1(self):
-        # Example
         app = self.app
+
+        # Example
         @app.get('/(.*)')
         def foo(a):
             return ('<!DOCTYPE html>'
                     '<html><head><title>' + a + '</title></head>'
                     '<body><p>' + a + '</p></body></html>')
-        self.run_app()
 
         # Test
+        self.run_app()
         self.assert200('/foo', '<p>foo</p>')
         self.assert200('/foo/bar/', '<p>foo/bar/</p>')
 
     def test_regex_route_example2(self):
-        # Example
         app = self.app
+
+        # Example
         @app.get('/(?P<user>[^/]*)/(?P<category>[^/]*)/([^/]*)')
         def page(page_id, user, category):
             return ('<!DOCTYPE html>'
                     '<html><head><title>Example</title></head><body>'
                     '<p>page_id: {}<br>user: {}<br>category: {}</p>'
                     '</body></html>').format(page_id, user, category)
-        self.run_app()
 
         # Test
+        self.run_app()
         self.assert200('/snowman/articles/python',
                        '<p>page_id: python<br>user: snowman<br>'
                        'category: articles</p>')
 
     def test_explicit_literal_route_example(self):
-        # Example
         app = self.app
+
+        # Example
         @app.get('literal:/<foo>')
         def foo():
             return ('<!DOCTYPE html>'
                     '<html><head><title>Foo</title></head>'
                     '<body><p>Foo</p></body></html>')
-        self.run_app()
 
         # Test
+        self.run_app()
         self.assert200('/<foo>', '<p>Foo</p>')
         self.assert404('/foo')
 
@@ -258,60 +269,64 @@ class ExamplesTest(unittest.TestCase):
             return ('<!DOCTYPE html>'
                     '<html><head><title>Foo</title></head>'
                     '<body><p>a: ' + a + '</p></body></html>')
-        self.run_app()
 
         # Test
+        self.run_app()
         self.assert200('/(foo)/bar', '<p>a: bar</p>')
         self.assert404('/foo/<>')
 
     def test_explicit_regex_route_example(self):
-        # Example
         app = self.app
+
+        # Example
         @app.get('regex:/foo\d*$')
         def foo():
             return ('<!DOCTYPE html>'
                     '<html><head><title>Foo</title></head>'
                     '<body><p>Foo</p></body></html>')
-        self.run_app()
 
         # Test
+        self.run_app()
         self.assert200('/foo123', '<p>Foo</p>')
         self.assert200('/foo', '<p>Foo</p>')
         self.assert404('/foo\d*$')
 
     def test_query_string_example1(self):
-        # Example
         app = self.app
+
+        # Example
         @app.get('/')
         def home():
             return ('<!DOCTYPE html>'
                     '<html><head><title>Foo</title></head>'
                     '<body><p>name: {}</p></body>'
                     '</html>').format(app.request.query['name'])
-        self.run_app()
 
         # Test
+        self.run_app()
         self.assert200('/?name=Humpty+Dumpty',
                        '<p>name: Humpty Dumpty</p>')
 
     def test_query_string_example2(self):
-        # Example
         app = self.app
+
+        # Example
         @app.get('/')
         def home():
             return ('<!DOCTYPE html>'
                     '<html><head><title>Foo</title></head>'
                     '<body><p>name: {}</p></body>'
                     '</html>').format(app.request.query.getall('name'))
-        self.run_app()
 
         # Test
+        self.run_app()
         self.assert200('/?name=Humpty&name=Santa',
                        "<p>name: ['Humpty', 'Santa']</p>")
 
     def test_form_example1(self):
-        # Example
         app = self.app
+
+        # Example
         @app.get('/')
         def show_form():
             return ('<!DOCTYPE html>'
@@ -329,9 +344,9 @@ class ExamplesTest(unittest.TestCase):
                     '<p>First name: {}<br>Last name: {}</p>'
                     '</body></html>').format(app.request.form['firstName'],
                                              app.request.form['lastName'])
-        self.run_app()
 
         # Test
+        self.run_app()
         self.assert200('/', 'First name')
         form = {'firstName': 'Humpty', 'lastName': 'Dumpty'}
         data = urllib.parse.urlencode(form).encode()
@@ -341,8 +356,9 @@ class ExamplesTest(unittest.TestCase):
                       response.read() )
 
     def test_form_example2(self):
-        # Example
         app = self.app
+
+        # Example
         @app.get('/')
         def show_form():
             return ('<!DOCTYPE html>'
@@ -360,9 +376,9 @@ class ExamplesTest(unittest.TestCase):
                     '<p>name (single): {}<br>name (multi): {}</p>'
                     '</body></html>').format(app.request.form['name'],
                                              app.request.form.getall('name'))
-        self.run_app()
 
         # Test
+        self.run_app()
         self.assert200('/', 'name1')
         form = (('name', 'Humpty'), ('name', 'Santa'))
         data = urllib.parse.urlencode(form).encode()
@@ -373,58 +389,62 @@ class ExamplesTest(unittest.TestCase):
                       response.read() )
 
     def test_error_example(self):
-        # Example
         app = self.app
+
+        # Example
         @app.error(404)
         def error():
             return ('<!DOCTYPE html>'
                     '<html><head><title>Page not found</title></head>'
                     '<body><p>Page not found</p></body></html>')
-        self.run_app()
 
         # Test
+        self.run_app()
         with self.assertRaises(urllib.error.HTTPError) as cm:
             urllib.request.urlopen('http://localhost:8080/foo')
         self.assertEqual(cm.exception.code, 404)
         self.assertIn(b'<p>Page not found</p>', cm.exception.read())
 
     def test_set_status_code(self):
-        # Example
         app = self.app
+
+        # Example
         @app.get('/foo')
         def foo():
             app.response.status = 403
             return ('<!DOCTYPE html>'
                     '<html><head><title>Access is forbidden</title></head>'
                     '<body><p>Access is forbidden</p></body></html>')
-        self.run_app()
 
         # Test
+        self.run_app()
         with self.assertRaises(urllib.error.HTTPError) as cm:
             urllib.request.urlopen('http://localhost:8080/foo')
         self.assertEqual(cm.exception.code, 403)
         self.assertIn(b'<p>Access is forbidden</p>', cm.exception.read())
 
     def test_set_body_and_return_status_code(self):
-        # Example
         app = self.app
+
+        # Example
         @app.get('/foo')
         def foo():
             app.response.body = ('<!DOCTYPE html>'
                     '<html><head><title>Access is forbidden</title></head>'
                     '<body><p>Access is forbidden</p></body></html>')
             return 403
-        self.run_app()
 
         # Test
+        self.run_app()
         with self.assertRaises(urllib.error.HTTPError) as cm:
             urllib.request.urlopen('http://localhost:8080/foo')
         self.assertEqual(cm.exception.code, 403)
         self.assertIn(b'<p>Access is forbidden</p>', cm.exception.read())
 
     def test_return_status_code_and_error_handler(self):
-        # Example
         app = self.app
+
+        # Example
         @app.get('/foo')
         def foo():
             return 403
@@ -434,23 +454,24 @@ class ExamplesTest(unittest.TestCase):
             return ('<!DOCTYPE html>'
                     '<html><head><title>Access is forbidden</title></head>'
                     '<body><p>Access is forbidden</p></body></html>')
-        self.run_app()
 
         # Test
+        self.run_app()
         with self.assertRaises(urllib.error.HTTPError) as cm:
             urllib.request.urlopen('http://localhost:8080/foo')
         self.assertEqual(cm.exception.code, 403)
         self.assertIn(b'<p>Access is forbidden</p>', cm.exception.read())
 
     def test_return_status_code_only(self):
-        # Example
         app = self.app
+
+        # Example
         @app.get('/foo')
         def foo():
             return 403
-        self.run_app()
 
         # Test
+        self.run_app()
         with self.assertRaises(urllib.error.HTTPError) as cm:
             urllib.request.urlopen('http://localhost:8080/foo')
         self.assertEqual(cm.exception.code, 403)
