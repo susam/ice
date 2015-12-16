@@ -408,12 +408,12 @@ class Wildcard:
 
     _types_re = {
         'str': r'([^/]+)',
+        'path': r'(.+)',
         'int': r'(0|[1-9][0-9]*)',
         '+int': r'([1-9][0-9]*)',
         '-int': r'(0|-?[1-9][0-9]*)',
     }
     _name_re = re.compile(r'^(?:[^\d\W]\w*|!|)$') # Identifiers, '!', ''
-    _types = ['str', 'int', '+int', '-int']
 
     def __init__(self, spec):
         """Initialize wildcard definition.
@@ -431,7 +431,7 @@ class Wildcard:
         if Wildcard._name_re.search(self.name) is None:
             raise RouteError('Invalid wildcard name {!r} in {!r}'
                              .format(self.name, spec))
-        if self._type not in Wildcard._types:
+        if self._type not in Wildcard._types_re.keys():
             raise RouteError('Invalid wildcard type {!r} in {!r}'
                              .format(self._type, spec))
 
@@ -453,7 +453,7 @@ class Wildcard:
 
         Return: Value converted to proper type (type: str or int)
         """
-        if self._type == 'str':
+        if self._type in ['str', 'path']:
             return value
         else:
             return int(value)

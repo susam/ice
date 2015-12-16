@@ -74,6 +74,13 @@ class WildcardTest(unittest.TestCase):
         self.assertEqual(wildcard.value('0'), '0')
         self.assertEqual(wildcard.value('10'), '10')
 
+    def test_path_wildcards(self):
+        wildcard = ice.Wildcard('<:path>')
+        self.assertEqual(wildcard.value('/foo'), '/foo')
+
+        wildcard = ice.Wildcard('<a:path>')
+        self.assertEqual(wildcard.value('/foo'), '/foo')
+
     def test_int_wildcards(self):
         wildcard = ice.Wildcard('<:int>')
         self.assertEqual(wildcard.value('0'), 0)
@@ -174,6 +181,7 @@ class WildcardTest(unittest.TestCase):
         ice.Wildcard('<>')
         ice.Wildcard('<:>')
         ice.Wildcard('<:str>')
+        ice.Wildcard('<:path>')
         ice.Wildcard('<:int>')
         ice.Wildcard('<:+int>')
         ice.Wildcard('<:-int>')

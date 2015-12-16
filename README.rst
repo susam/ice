@@ -375,55 +375,64 @@ The following rules describe how a wildcard is interpreted.
 7.  If *name* is present but it is neither ``!`` nor a valid Python
     identifier, ice.RouteError is raised.
 8.  If *type* is present, it must be preceded by ``:`` (colon).
-9.  If *type* is present but it is not ``str``, ``int``, ``+int`` and
-    ``-int``, ice.RouteError is raised.
-10.  If *type* is missing, it is assumed to be ``str``.
-11. If *type* is ``str``, it matches a string not containing ``/``,
-    ``<`` and ``>``. The path of the request path matched by the
+9.  If *type* is present but it is not ``str``, ``path``, ``int``,
+    ``+int`` and ``-int``, ice.RouteError is raised.
+10. If *type* is missing, it is assumed to be ``str``.
+11. If *type* is ``str``, it matches a string of one or more characters
+    such that none of the characters is ``/``. The path of the request
+    path matched by the wildcard is passed as an ``str`` object to the
+    route's callable.
+12. If *type* is ``path``, it matches a string of one or more characters
+    that may contain ``/``. The path of the request path matched by the
     wildcard is passed as an ``str`` object to the route's callable.
-12. If *type* is ``int``, ``+int`` or ``-int``, the path of the request
+13. If *type* is ``int``, ``+int`` or ``-int``, the path of the request
     path matched by the wildcard is passed as an ``int`` object to the
     route's callable.
-13. If *type* is ``+int``, the wildcard matches a positive integer
+14. If *type* is ``+int``, the wildcard matches a positive integer
     beginning with a non-zero digit.
-14. If *type* is ``int``, the wildcard matches ``0`` as well as
+15. If *type* is ``int``, the wildcard matches ``0`` as well as
     everything that a wildcard of type ``+int`` matches.
-15. If *type* is ``-int``, the wildcard matches a negative integer that
+16. If *type* is ``-int``, the wildcard matches a negative integer that
     begins with the ``-`` sign followed by a non-zero digit as well as
     everything that a wildcard of type ``int`` matches.
 
-Here is an example that demonstrates a typical route with an ``int``
-wildcard.
+Here is an example that demonstrates a typical route with ``path`` and
+``int`` wildcards.
 
 .. code:: python
 
     import ice
     app = ice.cube()
 
-    @app.get('/notes/<:int>')
-    def note(note_id):
+    @app.get('/notes/<:path>/<:int>')
+    def note(note_path, note_id):
         return ('<!DOCTYPE html>'
                 '<html><head><title>Example</title></head><body>'
-                '<p>note_id: {}</p></body></html>').format(note_id)
+                '<p>note_path: {}<br>note_id: {}</p>'
+                '</body></html>').format(note_path, note_id)
 
     if __name__ == '__main__':
         app.run()
 
-After running this application, visiting http://localhost:8080/notes/12
-displays a page with the following text.
-
-    | note_id: 12
-
-Visiting http://localhost:8080/notes/0 displays a page with the
+After running this application, visiting
+http://localhost:8080/notes/tech/python/12 displays a page with the
 following text.
 
+    | note_path: tech/python
+    | note_id: 12
+
+Visiting http://localhost:8080/notes/tech/python/0 displays a page with
+the following text.
+
+    | note_path: tech/python
     | note_id: 0
 
-However, visiting http://localhost:8080/notes/+12,
-http://localhost:8080/notes/+0 or http://localhost:8080/notes/012,
-displays the '404 Not Found' page because ``<:int>`` does not match an
-integer with a leading ``+`` sign or with a leading ``0``. It matches
-``0`` and a positive integer beginning with a non-zero digit only.
+However, visiting http://localhost:8080/notes/tech/python/+12
+http://localhost:8080/notes/tech/python/+0 or
+http://localhost:8080/notes/tech/python/012, displays the
+'404 Not Found' page because ``<:int>`` does not match an integer with a
+leading ``+`` sign or with a leading ``0``. It matches ``0`` and a
+positive integer beginning with a non-zero digit only.
 
 Regular expression routes
 ~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -200,19 +200,22 @@ class ExamplesTest(unittest.TestCase):
         app = self.app
 
         # Example
-        @app.get('/notes/<:int>')
-        def note(note_id):
+        @app.get('/notes/<:path>/<:int>')
+        def note(note_path, note_id):
             return ('<!DOCTYPE html>'
                     '<html><head><title>Example</title></head><body>'
-                    '<p>note_id: {}</p></body></html>').format(note_id)
+                    '<p>note_path: {}<br>note_id: {}</p>'
+                    '</body></html>').format(note_path, note_id)
 
         # Test
         self.run_app()
-        self.assert200('/notes/12', '<p>note_id: 12</p>')
-        self.assert200('/notes/0', '<p>note_id: 0</p>')
-        self.assert404('/notes/+12')
-        self.assert404('/notes/+0')
-        self.assert404('/notes/012')
+        self.assert200('/notes/tech/python/12',
+                       '<p>note_path: tech/python<br>note_id: 12</p>')
+        self.assert200('/notes/tech/python/0',
+                       '<p>note_path: tech/python<br>note_id: 0</p>')
+        self.assert404('/notes/tech/python/+12')
+        self.assert404('/notes/tech/python/+0')
+        self.assert404('/notes/tech/python/012')
 
     def test_regex_route_example1(self):
         app = self.app

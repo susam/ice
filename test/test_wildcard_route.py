@@ -76,14 +76,18 @@ class WildcardRouteTest(unittest.TestCase):
         r = ice.WildcardRoute('/<>', m)
         self.assertEqual(r.match('/foo'), (m, ['foo'], {}))
         self.assertEqual(r.match('/bar'), (m, ['bar'], {}))
+        self.assertEqual(r.match('/<baz>'), (m, ['<baz>'], {}))
+        self.assertIsNone(r.match('/'))
         self.assertIsNone(r.match('/foo/'))
         self.assertIsNone(r.match('/foo/bar'))
 
         r = ice.WildcardRoute('/<>/<>', m)
         self.assertEqual(r.match('/foo/bar'), (m, ['foo', 'bar'], {}))
+        self.assertEqual(r.match('/<foo>/bar'), (m, ['<foo>', 'bar'], {}))
         self.assertIsNone(r.match('/foo'))
         self.assertIsNone(r.match('/foo/'))
         self.assertIsNone(r.match('/foo/bar/'))
+        self.assertIsNone(r.match('//bar/'))
 
         r = ice.WildcardRoute('/<>/bar', m)
         self.assertEqual(r.match('/foo/bar'), (m, ['foo'], {}))
@@ -94,10 +98,11 @@ class WildcardRouteTest(unittest.TestCase):
 
     def test_named_wildcard(self):
         m = mock.Mock()
-        
+
         r = ice.WildcardRoute('/<a>', m)
         self.assertEqual(r.match('/foo'), (m, [], {'a': 'foo'}))
         self.assertEqual(r.match('/bar'), (m, [], {'a': 'bar'}))
+        self.assertEqual(r.match('/<baz>'), (m, [], {'a': '<baz>'}))
         self.assertIsNone(r.match('/foo/'))
         self.assertIsNone(r.match('/foo/bar'))
 
@@ -175,31 +180,35 @@ class WildcardRouteTest(unittest.TestCase):
         self.assertIsNone(r.match('/foo/bar'))
         self.assertIsNone(r.match('/'))
 
-    def test_anonymous_explicit_str_wildcard(self):
+    def test_anonymous_str_wildcard(self):
         m = mock.Mock()
 
         r = ice.WildcardRoute('/<:str>', m)
         self.assertEqual(r.match('/foo'), (m, ['foo'], {}))
         self.assertEqual(r.match('/bar'), (m, ['bar'], {}))
+        self.assertEqual(r.match('/<baz>'), (m, ['<baz>'], {}))
         self.assertIsNone(r.match('/foo/'))
         self.assertIsNone(r.match('/foo/bar'))
+        self.assertIsNone(r.match('/'))
 
         r = ice.WildcardRoute('/<:str>/<:str>', m)
         self.assertEqual(r.match('/foo/bar'), (m, ['foo', 'bar'], {}))
         self.assertIsNone(r.match('/foo'))
         self.assertIsNone(r.match('/foo/'))
         self.assertIsNone(r.match('/foo/bar/'))
+        self.assertIsNone(r.match('//bar/'))
 
         r = ice.WildcardRoute('/<:str>/bar', m)
         self.assertEqual(r.match('/foo/bar'), (m, ['foo'], {}))
+        self.assertEqual(r.match('/<foo>/bar'), (m, ['<foo>'], {}))
         self.assertIsNone(r.match('/foo'))
         self.assertIsNone(r.match('/bar'))
         self.assertIsNone(r.match('/foo/bar/'))
         self.assertIsNone(r.match('/foo/bar/baz'))
 
-    def test_named_explicit_str_wildcard(self):
+    def test_named_str_wildcard(self):
         m = mock.Mock()
-        
+
         r = ice.WildcardRoute('/<a:str>', m)
         self.assertEqual(r.match('/foo'), (m, [], {'a': 'foo'}))
         self.assertEqual(r.match('/bar'), (m, [], {'a': 'bar'}))
@@ -212,6 +221,7 @@ class WildcardRouteTest(unittest.TestCase):
         self.assertIsNone(r.match('/foo'), (m, [], {}))
         self.assertIsNone(r.match('/foo/'), (m, [], {}))
         self.assertIsNone(r.match('/foo/'), (m, [], {}))
+        self.assertIsNone(r.match('//foo'), (m, [], {}))
 
         r = ice.WildcardRoute('/<a:str>/bar', m)
         self.assertEqual(r.match('/foo/bar'), (m, [], {'a': 'foo'}))
@@ -219,6 +229,69 @@ class WildcardRouteTest(unittest.TestCase):
         self.assertIsNone(r.match('/bar'))
         self.assertIsNone(r.match('/foo/bar/'))
         self.assertIsNone(r.match('/foo/bar/baz'))
+
+    def test_anonymous_path_wildcard(self):
+        m = mock.Mock()
+
+        r = ice.WildcardRoute('<:path>', m)
+        self.assertEqual(r.match('/foo'), (m, ['/foo'], {}))
+        self.assertEqual(r.match('/bar'), (m, ['/bar'], {}))
+        self.assertEqual(r.match('/<baz>'), (m, ['/<baz>'], {}))
+        self.assertEqual(r.match('/foo/'), (m, ['/foo/'], {}))
+        self.assertEqual(r.match('/foo/bar'), (m, ['/foo/bar'], {}))
+        self.assertEqual(r.match('foo'), (m, ['foo'], {}))
+        self.assertEqual(r.match('foo/'), (m, ['foo/'], {}))
+        self.assertEqual(r.match('foo/bar'), (m, ['foo/bar'], {}))
+
+        r = ice.WildcardRoute('<:path><:path>', m)
+        self.assertEqual(r.match('/foo/bar'), (m, ['/foo/ba', 'r'], {}))
+        self.assertEqual(r.match('/foo/bar/baz'), (m, ['/foo/bar/ba', 'z'], {}))
+        self.assertEqual(r.match('/foo'), (m, ['/fo', 'o'], {}))
+
+        r = ice.WildcardRoute('/<:path>/bar', m)
+        self.assertEqual(r.match('/foo/bar'), (m, ['foo'], {}))
+        self.assertEqual(r.match('/<foo>/bar'), (m, ['<foo>'], {}))
+        self.assertEqual(r.match('/foo/bar/bar'), (m, ['foo/bar'], {}))
+        self.assertIsNone(r.match('/foo'))
+        self.assertIsNone(r.match('/bar'))
+        self.assertIsNone(r.match('/foo/bar/'))
+        self.assertIsNone(r.match('/foo/bar/baz'))
+
+        r = ice.WildcardRoute('/<:path>', m)
+        self.assertEqual(r.match('/foo/bar'), (m, ['foo/bar'], {}))
+        self.assertIsNone(r.match('/'))
+
+    def test_named_path_wildcard(self):
+        m = mock.Mock()
+
+        r = ice.WildcardRoute('<a:path>', m)
+        self.assertEqual(r.match('/foo'), (m, [], {'a': '/foo'}))
+        self.assertEqual(r.match('/bar'), (m, [], {'a': '/bar'}))
+        self.assertEqual(r.match('/<baz>'), (m, [], {'a': '/<baz>'}))
+        self.assertEqual(r.match('/foo/'), (m, [], {'a': '/foo/'}))
+        self.assertEqual(r.match('/foo/bar'), (m, [], {'a': '/foo/bar'}))
+        self.assertEqual(r.match('foo'), (m, [], {'a': 'foo'}))
+        self.assertEqual(r.match('foo/'), (m, [], {'a': 'foo/'}))
+        self.assertEqual(r.match('foo/bar'), (m, [], {'a': 'foo/bar'}))
+
+        r = ice.WildcardRoute('<a:path><b:path>', m)
+        self.assertEqual(r.match('/foo/bar'),
+                         (m, [], {'a': '/foo/ba', 'b': 'r'}))
+        self.assertEqual(r.match('/foo/bar/baz'),
+                         (m, [], {'a': '/foo/bar/ba', 'b': 'z'}))
+        self.assertEqual(r.match('/foo'),
+                         (m, [], {'a': '/fo', 'b': 'o'}))
+
+        r = ice.WildcardRoute('/<a:path>/bar', m)
+        self.assertEqual(r.match('/foo/bar'), (m, [], {'a': 'foo'}))
+        self.assertIsNone(r.match('foo'))
+        self.assertIsNone(r.match('/bar'))
+        self.assertIsNone(r.match('/foo/bar/'))
+        self.assertIsNone(r.match('/foo/bar/baz'))
+
+        r = ice.WildcardRoute('/<a:path>', m)
+        self.assertEqual(r.match('/foo/bar'), (m, [], {'a': 'foo/bar'}))
+        self.assertIsNone(r.match('/'))
 
     def test_anonymous_int_wildcard(self):
         m = mock.Mock()
