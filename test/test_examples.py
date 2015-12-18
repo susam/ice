@@ -29,11 +29,13 @@
 
 
 import unittest
-import urllib
+import urllib.request
+import urllib.error
 import threading
 import time
 
 import ice
+from test import data
 
 class ExamplesTest(unittest.TestCase):
 
@@ -408,7 +410,8 @@ class ExamplesTest(unittest.TestCase):
         self.assertEqual(cm.exception.code, 404)
         self.assertIn(b'<p>Page not found</p>', cm.exception.read())
 
-    def test_set_status_code(self):
+    # Set status code and return body
+    def test_status_codes_example1(self):
         app = self.app
 
         # Example
@@ -426,7 +429,8 @@ class ExamplesTest(unittest.TestCase):
         self.assertEqual(cm.exception.code, 403)
         self.assertIn(b'<p>Access is forbidden</p>', cm.exception.read())
 
-    def test_set_body_and_return_status_code(self):
+    # Set body and return status code (not recommended)
+    def test_status_code_example2(self):
         app = self.app
 
         # Example
@@ -444,7 +448,8 @@ class ExamplesTest(unittest.TestCase):
         self.assertEqual(cm.exception.code, 403)
         self.assertIn(b'<p>Access is forbidden</p>', cm.exception.read())
 
-    def test_return_status_code_and_error_handler(self):
+    # Set status code and error handler (recommended)
+    def test_status_code_example3(self):
         app = self.app
 
         # Example
@@ -465,7 +470,8 @@ class ExamplesTest(unittest.TestCase):
         self.assertEqual(cm.exception.code, 403)
         self.assertIn(b'<p>Access is forbidden</p>', cm.exception.read())
 
-    def test_return_status_code_only(self):
+    # Set return code only (generic error handler is invoked)
+    def test_status_code_example4(self):
         app = self.app
 
         # Example
@@ -481,3 +487,50 @@ class ExamplesTest(unittest.TestCase):
         self.assertIn(b'<h1>403 Forbidden</h1>\n<p>Request forbidden '
                       b'-- authorization will not help</p>\n',
                       cm.exception.read())
+
+    # Static file with media type guessing
+    def test_static_file_example1(self):
+        app = self.app
+
+        # Example
+        @app.get('/code/<:path>')
+        def send_code(path):
+            return app.static(data.dirpath, path)
+
+        # Test regular request
+        self.run_app()
+        response = urllib.request.urlopen('http://localhost:8080/code/foo.txt')
+        self.assertEqual(response.read(), b'foo\n')
+        self.assertEqual(response.getheader('Content-Type'),
+                         'text/plain; charset=UTF-8')
+
+        # Test directory traversal attack
+        with self.assertRaises(urllib.error.HTTPError) as cm:
+            urllib.request.urlopen('http://localhost:8080/code/%2e%2e/foo.txt')
+        self.assertEqual(cm.exception.code, 403)
+
+    # Static file with explicit media type
+    def test_static_file_example1(self):
+        app = self.app
+
+        # Example
+        @app.get('/code/<:path>')
+        def send_code(path):
+            return app.static(data.dirpath, path,
+                              media_type='text/plain', charset='ISO-8859-1')
+
+        # Test regular request
+        self.run_app()
+        response = urllib.request.urlopen('http://localhost:8080/code/foo.c')
+        self.assertEqual(b'#include <stdio.h>\n\n'
+                         b'int main()\n{\n'
+                         b'    printf("hello, world\\n");\n'
+                         b'    return 0;\n'
+                         b'}\n', response.read())
+        self.assertEqual(response.getheader('Content-Type'),
+                         'text/plain; charset=ISO-8859-1')
+
+        # Test directory traversal attack
+        with self.assertRaises(urllib.error.HTTPError) as cm:
+            urllib.request.urlopen('http://localhost:8080/code/%2e%2e/foo.txt')
+        self.assertEqual(cm.exception.code, 403)

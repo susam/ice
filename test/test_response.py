@@ -56,9 +56,14 @@ class ResponseTest(unittest.TestCase):
     def test_response_return_value_with_no_body(self):
         self.assertEqual(ice.Response(mock.Mock()).response(), [b''])
 
-    def test_response_return_value_with_body(self):
+    def test_response_return_value_with_str_body(self):
         r = ice.Response(mock.Mock())
         r.body = 'foo'
+        self.assertEqual(r.response(), [b'foo'])
+
+    def test_response_return_value_with_bytes_body(self):
+        r = ice.Response(mock.Mock())
+        r.body = b'foo'
         self.assertEqual(r.response(), [b'foo'])
 
     def test_status_line(self):
@@ -71,3 +76,32 @@ class ResponseTest(unittest.TestCase):
         r.status = 400
         self.assertEqual(r.status_detail,
                          'Bad request syntax or unsupported method')
+
+    def test_none_media_type(self):
+        m = mock.Mock()
+        r = ice.Response(m)
+        r.media_type = None
+        r.response()
+        m.assert_called_with('200 OK', [
+            ('Content-Length', '0'),
+        ])
+
+    def test_text_media_type(self):
+        m = mock.Mock()
+        r = ice.Response(m)
+        r.media_type = 'text/css'
+        r.response()
+        m.assert_called_with('200 OK', [
+            ('Content-Type', 'text/css; charset=UTF-8'),
+            ('Content-Length', '0'),
+        ])
+
+    def test_non_text_media_type(self):
+        m = mock.Mock()
+        r = ice.Response(m)
+        r.media_type = 'image/png'
+        r.response()
+        m.assert_called_with('200 OK', [
+            ('Content-Type', 'image/png'),
+            ('Content-Length', '0'),
+        ])

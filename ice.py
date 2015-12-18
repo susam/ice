@@ -45,6 +45,8 @@ import re
 import cgi
 import urllib.parse
 import http.server
+import os
+import mimetypes
 
 
 def cube():
@@ -168,6 +170,49 @@ class Ice:
             return callback
         return decorator
 
+    def static(self, root, path, media_type=None, charset='UTF-8'):
+        """Send content of a static file as response.
+
+        The path to what is known as the document root directory should
+        be specified as the root argument. This is very important to
+        prevent directory traversal attack. This method guarantees that
+        only files within the document root directory are served and no
+        files outside this directory can be accessed by a client.
+
+        The path to the actual file to be returned should be specified
+        as the path argument. This path must be relative to the document
+        directory.
+
+        The media_type and charset arguments are used to set the
+        Content-Type header of the HTTP response. If media_type argument
+        is specified as None (which is the default), then media_type is
+        guessed from the filename of the file to be returned.
+
+        Arguments:
+        root       -- Path to document root directory (type: str)
+        path       -- Path to file relative to document root (type: str)
+        media_type -- Media type of file (default: None) (type: str)
+        charset    -- Character set of file (default: 'UTF-8') (type: str)
+
+        Return: Content of file to be returned as bytes (type: bytes)
+        """
+        root = os.path.abspath(os.path.join(root, ''))
+        path = os.path.abspath(os.path.join(root, path.lstrip('/\\')))
+
+        if not path.startswith(root):
+            return 403
+        elif not os.path.isfile(path):
+            return 404
+
+        if media_type is not None:
+            self.response.media_type = media_type
+        else:
+            self.response.media_type = mimetypes.guess_type(path)[0]
+        self.response.charset = charset
+
+        with open(path, 'rb') as f:
+            return f.read()
+
     def __call__(self, environ, start_response):
         """Respond to a request.
         
@@ -192,11 +237,11 @@ class Ice:
         else:
             value = 501 # Not Implemented
 
-        if isinstance(value, str):
+        if isinstance(value, str) or isinstance(value, bytes):
             self.response.body = value
         elif isinstance(value, int) and value in Response.responses:
             self.response.status = value
-            if self.response.body == '':
+            if self.response.body is None:
                 self.response.body = self._get_error_page_callback()()
         else:
             raise Error('Route callback for {} {} returned invalid '
@@ -215,7 +260,8 @@ class Ice:
         elif None in self._error_handlers:
             return self._error_handlers[None]
         else:
-            # Rudimentary error message if no error handler was found
+            # Rudimentary error handler if no error handler was found
+            self.response.media_type = 'text/plain'
             return lambda: self.response.status_line
 
 
@@ -558,22 +604,38 @@ class Response:
         """
         self.start = start_response_callable
         self.status = 200
-        self.type = 'text/html'
+        self.media_type = 'text/html'
         self.charset = 'UTF-8'
-        self.headers = []
-        self.body = ''
+        self._headers = []
+        self.body = None
 
     def response(self):
         """Return the HTTP response body.
         
-        Return: HTTP response body as a list of bytes (type: bytes)
+        Return: HTTP response body as a sequence of bytes (type: bytes)
         """
-        out = self.body.encode(self.charset)
-        self.headers.append(('Content-Type', self.content_type))
-        self.headers.append(('Content-Length', str(len(out))))
-        self.start(self.status_line, self.headers)
+        if isinstance(self.body, bytes):
+            out = self.body
+        elif isinstance(self.body, str):
+            out = self.body.encode(self.charset)
+        else:
+            out = b''
+        self._add_header('Content-Type', self.content_type)
+        self._add_header('Content-Length', str(len(out)))
+
+        self.start(self.status_line, self._headers)
         return [out]
         
+    def _add_header(self, name, value):
+        """Add an HTTP header to response object.
+
+        Arguments:
+        name  -- HTTP header field name (type: str)
+        value -- HTTP header field value (type: str)
+        """
+        if value is not None:
+            self._headers.append((name, value))
+
     @property
     def status_line(self):
         """Return the HTTP response status line.
@@ -597,7 +659,12 @@ class Response:
         
         Return: Value of Content-Type header field (type: str)
         """
-        return self.type + '; charset=' + self.charset
+        if (self.media_type is not None and
+            self.media_type.startswith('text/') and
+            self.charset is not None):
+            return self.media_type + '; charset=' + self.charset
+        else:
+            return self.media_type
 
 
 class MultiDict(collections.UserDict):

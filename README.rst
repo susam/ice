@@ -13,6 +13,7 @@ small web applications in Python.
 .. contents::
    :backlinks: none
 
+
 Requirements
 ------------
 This module should be used with Python 3.4 or any later version of
@@ -20,6 +21,7 @@ Python interpreter.
 
 This module depends only on the Python standard library. It does not
 depend on any third party libraries.
+
 
 Installation
 ------------
@@ -38,10 +40,12 @@ and then execute the following command. ::
 Note that on a Windows system, you may have to replace ``python3`` with
 the path to your Python 3 interpreter.
 
+
 Support
 -------
 To report any bugs, or ask any question, please visit
 https://github.com/susam/ice/issues.
+
 
 Resources
 ---------
@@ -52,6 +56,7 @@ Here is a list of useful links about this project.
 - `Issue tracker on GitHub <https://github.com/susam/ice/issues>`_
 - `Changelog on GitHub
   <https://github.com/susam/ice/blob/master/CHANGES.rst>`_
+
 
 License
 -------
@@ -93,6 +98,7 @@ you should be able to see a web page that says, 'It works!'.
       code directive.
     - Strings, even when they are part of a request path, are enclosed
       in ``' and '``.
+
 
 Routes
 ------
@@ -294,8 +300,8 @@ following text.
 Note: Since parts of the request path matched by anonymous wildcards are
 passed as positional arguments and parts of the request path matched by
 named wildcards are passed as keyword arguments to the route's callable,
-it is required by the Python language that all positional parameters
-must come before all keyword parameters in the function definition.
+it is required by the Python language that all positional arguments
+must come before all keyword arguments in the function definition.
 However, the wildcards may appear in any order in the route's pattern.
 
 Throwaway wildcard
@@ -351,7 +357,7 @@ the following text.
     | page_id: python
 
 There are three wildcards in the route's request path pattern but there
-is only one parameter in the route's callable because two out of the
+is only one argument in the route's callable because two out of the
 three wildcards are throwaway wildcards.
 
 Wildcard specification
@@ -495,7 +501,7 @@ Note: Since parts of the request path matched by non-symbolic capturing
 groups are passed as positional arguments and parts of the request path
 matched by symbolic capturing groups are passed as keyword arguments to
 the route's callable, it is required by the Python language that all
-positional parameters must come before all keyword parameters in the
+positional arguments must come before all keyword arguments in the
 function definition. However, the capturing groups may appear in any
 order in the route's pattern.
 
@@ -620,6 +626,7 @@ A request path pattern that does not contain a regular expression
 capturing group but needs to be treated as a regular expression pattern
 must be prefixed with the string ``regex:``.
 
+
 Query strings
 -------------
 The following example shows an application that can process a query
@@ -685,6 +692,7 @@ displays a page with the following text.
 
 Note that the ``ice.MultiDict.getall`` method returns all the values
 belonging to the key as a ``list`` object.
+
 
 Forms
 -----
@@ -756,6 +764,7 @@ up the form and submitting it displays the form data. While
 input field, ``app.request.form.getall('name')`` returns strings entered
 in both input fields as a list object.
 
+
 Error pages
 -----------
 The application object returned by the ``ice.cube`` function contains a
@@ -793,8 +802,9 @@ displays a page with the following text.
 
     | Page not found
 
-HTTP status codes
------------------
+
+Status codes
+------------
 In all the examples above, the response message body is returned as a
 string from a route's callable. It is also possible to return the
 response status code as an integer. In other words, a route's callable
@@ -821,7 +831,7 @@ callable.
 Here is an example where status code is set to 403 and a custom
 error page is returned.
 
-..code:: python
+.. code:: python
 
     import ice
 
@@ -845,7 +855,7 @@ displays a page with the following text.
 Here is another way of writing the above application. In this case, the
 message body is set and the status code is returned.
 
-..code:: python
+.. code:: python
 
     import ice
 
@@ -865,7 +875,7 @@ Although the above way of setting message body works, using an error
 handler is the preferred way of defining the message body for an HTTP
 error. Here is an example that demonstrates this.
 
-..code:: python
+.. code:: python
 
     import ice
 
@@ -891,7 +901,7 @@ object returned by the ``ice.cube`` is used to return a simple error
 page with the HTTP status line, a short description of the status and
 the version of the ice module.
 
-..code:: python
+.. code:: python
 
     import ice
 
@@ -909,3 +919,99 @@ displays a page with the following text.
 
     | 403 Forbidden
     | Request forbidden -- authorization will not help
+
+
+Static files
+------------
+In a typical production environment, a web server may be configured to
+receive HTTP requests and forward it to a Python application via WSGI.
+In such a setup, it might make more sense to configure the web server to
+serve static files because web servers implement several standard file
+handling capabilities and response headers, e.g. 'Last-Modified',
+'If-Modified-Since', etc. However, it is possible to serve static files
+from an ice application using the ``static()`` method that provides a
+very rudimentary means of serving static files. This could be useful in
+a development environment where one would want to test pages with static
+content such as style sheets, images, etc. served by an ice application
+without using a web server.
+
+Here is an example.
+
+.. code:: python
+
+    import ice
+    app = ice.cube()
+
+    @app.get('/code/<:path>')
+    def send_code(path):
+        return app.static('/var/www/project/code', path)
+
+    if __name__ == '__main__':
+        app.run()
+
+The first argument to the ``static()`` method must specify the path to
+what is known as the document root directory. This is very important to
+prevent `directory traversal attack`_. This method guarantees that only
+files within the document root directory are served and no files outside
+this directory can be accessed by a client.
+
+.. _directory traversal attack: https://en.wikipedia.org/wiki/Directory_traversal_attack
+
+The second argument is a path to the file to be returned as response.
+This path must be relative to the document directory.
+
+For example, if there is a file called
+/var/www/project/code/data/foo.txt, then visiting
+http://localhost:8080/code/data/foo.txt would return the content of
+this file as response.
+
+However, visiting http://localhost:8080/code/%2e%2e/foo.txt would
+display a '403 Forbidden' page because this request attempts to access
+foo.txt in the parent directory of the document directory (``%2e%2d`` is
+URL encoding of ``..``).
+
+In the above example, the 'Content-Type' header of the response is
+automatically set to 'text/plain; charset=UTF-8'. With only two
+arguments specified to the ``static()`` method, it uses the extension
+name of the file being returned to automatically guess the media type to
+be used in the 'Content-Type' header. For example, the media type of a
+.txt file is typically *guessed* to be 'text/plain'. But this may be
+different because system configuration files may be referred in order to
+guess the media type and such configuration files may map a .txt file to
+a different media type.
+
+For example, on a Debian 8.0 system, /etc/mime.types maps a .c file to
+'text/x-csrc'. This is one of the files that is referred to guess the
+media type. Therefore, the 'Content-Type' header for a request to
+http://localhost:8080/code/data/foo.c would be set to
+'text/x-csrc; charset=UTF-8' on such a system.
+
+To see the list of files that may be referred to guess media type,
+execute this command. ::
+
+    python3 -c "import mimetypes; print(mimetypes.knownfiles)"
+
+The media type of static file being returned in a response can be set
+explicitly to a desired value using the ``media_type`` keyword argument.
+
+The charset defaults to 'UTF-8' for any media type of type 'text'
+regardless of the subtype. This may be changed with the ``charset``
+keyword argument.
+
+.. code:: python
+
+    import ice
+    app = ice.cube()
+
+    @app.get('/code/<:path>')
+    def send_code(path):
+        return app.static('/var/www/project/code', path,
+                          media_type='text/plain', charset='ISO-8859-1')
+
+    if __name__ == '__main__':
+        app.run()
+
+The above code guarantees that the 'Content-Type' header of a request to
+http://localhost:8080/code/data/foo.c is set to
+'text/plain; charset=ISO-8859-1' regardless of how the media type of a
+.c file is defined in the system configuration files.

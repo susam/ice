@@ -36,6 +36,8 @@ import urllib.request
 import textwrap
 import time
 
+from test import data
+
 
 class IceTest(unittest.TestCase):
     def setUp(self):
@@ -53,7 +55,7 @@ class IceTest(unittest.TestCase):
         r = app({'REQUEST_METHOD': 'GET', 'PATH_INFO': '/foo'}, m)
         expected = '404 Not Found'
         m.assert_called_with(expected, [
-            ('Content-Type', 'text/html; charset=UTF-8'),
+            ('Content-Type', 'text/plain; charset=UTF-8'),
             ('Content-Length', str(len(expected)))
         ])
         self.assertEqual(r, [expected.encode()])
@@ -76,7 +78,7 @@ class IceTest(unittest.TestCase):
         expected = '501 Not Implemented'
         r = app({'REQUEST_METHOD': 'POST', 'PATH_INFO': '/'}, m)
         m.assert_called_with(expected, [
-            ('Content-Type', 'text/html; charset=UTF-8'),
+            ('Content-Type', 'text/plain; charset=UTF-8'),
             ('Content-Length', str(len(expected)))
         ])
         self.assertEqual(r, [expected.encode()])
@@ -99,7 +101,7 @@ class IceTest(unittest.TestCase):
         expected = '501 Not Implemented'
         r = app({'REQUEST_METHOD': 'GET', 'PATH_INFO': '/'}, m)
         m.assert_called_with(expected, [
-            ('Content-Type', 'text/html; charset=UTF-8'),
+            ('Content-Type', 'text/plain; charset=UTF-8'),
             ('Content-Length', str(len(expected)))
         ])
         self.assertEqual(r, [expected.encode()])
@@ -148,7 +150,7 @@ class IceTest(unittest.TestCase):
         m = unittest.mock.Mock()
         r = app({'REQUEST_METHOD': 'GET', 'PATH_INFO': '/'}, m)
         m.assert_called_with(expected, [
-            ('Content-Type', 'text/html; charset=UTF-8'),
+            ('Content-Type', 'text/plain; charset=UTF-8'),
             ('Content-Length', str(len(expected)))
         ])
         self.assertEqual(r, [expected.encode()])
@@ -157,7 +159,7 @@ class IceTest(unittest.TestCase):
         m = unittest.mock.Mock()
         r = app({'REQUEST_METHOD': 'GET', 'PATH_INFO': '/bar'}, m)
         m.assert_called_with(expected, [
-            ('Content-Type', 'text/html; charset=UTF-8'),
+            ('Content-Type', 'text/plain; charset=UTF-8'),
             ('Content-Length', str(len(expected)))
         ])
         self.assertEqual(r, [expected.encode()])
@@ -242,7 +244,7 @@ class IceTest(unittest.TestCase):
         self.assertEqual(cm.exception.code, 404)
         self.assertEqual(cm.exception.reason, 'Not Found')
         h = dict(cm.exception.headers)
-        self.assertEqual(h['Content-Type'], 'text/html; charset=UTF-8')
+        self.assertEqual(h['Content-Type'], 'text/plain; charset=UTF-8')
         self.assertEqual(h['Content-Length'], str(len(expected)))
         self.assertEqual(cm.exception.read(), expected.encode())
 
@@ -253,7 +255,7 @@ class IceTest(unittest.TestCase):
         self.assertEqual(cm.exception.code, 501)
         self.assertEqual(cm.exception.reason, 'Not Implemented')
         h = dict(cm.exception.headers)
-        self.assertEqual(h['Content-Type'], 'text/html; charset=UTF-8')
+        self.assertEqual(h['Content-Type'], 'text/plain; charset=UTF-8')
         self.assertEqual(h['Content-Length'], str(len(expected)))
         self.assertEqual(cm.exception.read(), expected.encode())
 
@@ -262,3 +264,83 @@ class IceTest(unittest.TestCase):
             urllib.request.urlopen('http://127.0.0.1:8080/bar')
         self.assertEqual(cm.exception.code, 500)
         self.assertEqual(cm.exception.reason, 'Internal Server Error')
+
+    def test_static(self):
+        app = ice.Ice()
+
+        @app.get('/foo')
+        def foo():
+            return app.static(data.dirpath, 'foo.txt')
+
+        @app.get('/bar')
+        def bar():
+            return app.static(data.dirpath, 'bar', 'text/html')
+
+        m = unittest.mock.Mock()
+
+        expected = 'foo\n'
+        r = app({'REQUEST_METHOD': 'GET', 'PATH_INFO': '/foo'}, m)
+        m.assert_called_with('200 OK', [
+            ('Content-Type', 'text/plain; charset=UTF-8'),
+            ('Content-Length', str(len(expected)))
+        ])
+        self.assertEqual(r, [expected.encode()])
+
+        expected = '<p>bar</p>\n'
+        r = app({'REQUEST_METHOD': 'GET', 'PATH_INFO': '/bar'}, m)
+        m.assert_called_with('200 OK', [
+            ('Content-Type', 'text/html; charset=UTF-8'),
+            ('Content-Length', str(len(expected)))
+        ])
+        self.assertEqual(r, [expected.encode()])
+
+    def test_static_403_error(self):
+        app = ice.Ice()
+
+        @app.get('/')
+        def foo():
+            return app.static(data.filepath('subdir'), '../foo.txt')
+
+        m = unittest.mock.Mock()
+
+        expected = '403 Forbidden'
+        r = app({'REQUEST_METHOD': 'GET', 'PATH_INFO': '/'}, m)
+        m.assert_called_with(expected, [
+            ('Content-Type', 'text/plain; charset=UTF-8'),
+            ('Content-Length', str(len(expected)))
+        ])
+        self.assertEqual(r, [expected.encode()])
+
+    def test_static_avoid_403_error(self):
+        app = ice.Ice()
+
+        @app.get('/')
+        def foo():
+            return app.static('/', data.filepath('foo.txt'))
+
+        m = unittest.mock.Mock()
+
+        expected = 'foo\n'
+        r = app({'REQUEST_METHOD': 'GET', 'PATH_INFO': '/'}, m)
+        m.assert_called_with('200 OK', [
+            ('Content-Type', 'text/plain; charset=UTF-8'),
+            ('Content-Length', str(len(expected)))
+        ])
+        self.assertEqual(r, [expected.encode()])
+
+    def test_static_404_error(self):
+        app = ice.Ice()
+
+        @app.get('/')
+        def foo():
+            return app.static(data.dirpath, 'nonexistent.txt')
+
+        m = unittest.mock.Mock()
+
+        expected = '404 Not Found'
+        r = app({'REQUEST_METHOD': 'GET', 'PATH_INFO': '/'}, m)
+        m.assert_called_with(expected, [
+            ('Content-Type', 'text/plain; charset=UTF-8'),
+            ('Content-Length', str(len(expected)))
+        ])
+        self.assertEqual(r, [expected.encode()])
