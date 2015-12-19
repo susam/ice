@@ -79,16 +79,7 @@ class ExamplesTest(unittest.TestCase):
             return ('<!DOCTYPE html>'
                     '<html><head><title>Foo</title></head>'
                     '<body><p>Foo</p></body></html>')
-            def home():
-                return ('<!DOCTYPE html>'
-                        '<html><head><title>Home</title></head>'
-                        '<body><p>Home</p></body></html>')
 
-            @app.get('/foo')
-            def foo():
-                return ('<!DOCTYPE html>'
-                        '<html><head><title>Foo</title></head>'
-                        '<body><p>Foo</p></body></html>')
         # Test
         self.run_app()
         self.assert200('/', '<p>Home</p>')
@@ -507,7 +498,7 @@ class ExamplesTest(unittest.TestCase):
         self.assertEqual(cm.exception.code, 403)
 
     # Static file with explicit media type
-    def test_static_file_example1(self):
+    def test_static_file_example2(self):
         app = self.app
 
         # Example

@@ -496,10 +496,7 @@ class Wildcard:
 
         Return: Value converted to proper type (type: str or int)
         """
-        if self._type in ['str', 'path']:
-            return value
-        else:
-            return int(value)
+        return value if self._type in ['str', 'path'] else int(value)
 
 
 class RegexRoute:
