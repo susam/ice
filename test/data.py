@@ -29,14 +29,14 @@ paths of test data files. This module may be used by unit tests that
 need to load test data from filesystem to perform tests.
 
 Attributes:
-dirpath -- Path to the base of the test data directory
+dirpath -- Absolute path to the base of the test data directory
 """
 
 
 import os
 
 
-dirpath = os.path.join(os.path.dirname(__file__), 'data')
+dirpath = os.path.abspath(os.path.join(os.path.dirname(__file__), 'data'))
 
 
 def filepath(*paths):
