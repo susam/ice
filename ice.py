@@ -1,28 +1,25 @@
-# Copyright (c) 2014 Susam Pal
-# All rights reserved.
+# The MIT License (MIT)
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
+# Copyright (c) 2014-2015 Susam Pal
 #
-#   1. Redistributions of source code must retain the above copyright
-#      notice, this list of conditions and the following disclaimer.
-#   2. Redistributions in binary form must reproduce the above copyright
-#      notice, this list of conditions and the following disclaimer in
-#      the documentation and/or other materials provided with the
-#      distribution.
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
 #
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 """Ice - WSGI on the rocks.
@@ -59,7 +56,7 @@ def cube():
     returned object may be used as a WSGI application.
     """
     app = Ice()
-        
+
     @app.get('/')
     def default_home_page():
         return simple_html('It works!',
@@ -120,7 +117,7 @@ class Ice:
 
     def get(self, pattern):
         """Decorator to add route for an HTTP GET request.
-        
+
         Arguments:
         pattern -- Routing pattern the path must match (type: str)
         """
@@ -128,7 +125,7 @@ class Ice:
 
     def post(self, pattern):
         """Decorator to add route for an HTTP POST request.
-        
+
         Arguments:
         pattern -- Routing pattern the path must match (type: str)
         """
@@ -136,7 +133,7 @@ class Ice:
 
     def route(self, method, pattern):
         """Decorator to add route for a request with any HTTP method.
-        
+
         Arguments:
         method  -- HTTP method name, e.g. GET, POST, etc. (type: str)
         pattern -- Routing pattern the path must match (type: str)
@@ -155,7 +152,7 @@ class Ice:
         the decorated callback should be invoked. If the status argument
         is specified as None, then the decorated callable is considered
         to be a fallback callback.
-        
+
         A fallback callback, when defined, is invoked to generate the
         error page for any HTTP response representing an error when
         there is no error handler defined explicitly for the response
@@ -215,7 +212,7 @@ class Ice:
 
     def __call__(self, environ, start_response):
         """Respond to a request.
-        
+
         Arguments:
         environ        -- Dictionary of environment variables
                           (type: dict)
@@ -252,7 +249,7 @@ class Ice:
 
     def _get_error_page_callback(self):
         """Return an error page for the current response status.
-        
+
         Return: Callback that returns str (type: callable)
         """
         if self.response.status in self._error_handlers:
@@ -274,10 +271,10 @@ class Router:
         self._literal = collections.defaultdict(dict)
         self._wildcard = collections.defaultdict(list)
         self._regex = collections.defaultdict(list)
-        
+
     def add(self, method, pattern, callback):
         """Add a route.
-        
+
         Arguments:
         method   -- HTTP method, e.g. GET, POST, etc. (type: str)
         pattern  -- Pattern for which the callback should be invoked
@@ -463,7 +460,7 @@ class Wildcard:
 
     def __init__(self, spec):
         """Initialize wildcard definition.
-        
+
         Arguments:
         spec -- An angle-bracket delimited wildcard specification
         """
@@ -563,9 +560,9 @@ class Request:
 
     def __init__(self, environ):
         """Initialize the current request object.
-        
+
         environ -- Dictionary of environment variables (type: dict)
-        """ 
+        """
         self.environ = environ
         self.method = environ.get('REQUEST_METHOD', 'GET')
         self.path = environ.get('PATH_INFO', '/')
@@ -611,7 +608,7 @@ class Response:
 
     def response(self):
         """Return the HTTP response body.
-        
+
         Return: HTTP response body as a sequence of bytes (type: bytes)
         """
         if isinstance(self.body, bytes):
@@ -625,7 +622,7 @@ class Response:
 
         self.start(self.status_line, self._headers)
         return [out]
-        
+
     def _add_header(self, name, value):
         """Add an HTTP header to response object.
 
@@ -656,7 +653,7 @@ class Response:
     @property
     def content_type(self):
         """Return the value of Content-Type header field.
-        
+
         Return: Value of Content-Type header field (type: str)
         """
         if (self.media_type is not None and

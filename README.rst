@@ -60,14 +60,15 @@ Here is a list of useful links about this project.
 
 License
 -------
-This is free software. You are permitted to redistribute and use it in
-source and binary forms, with or without modification, under the terms
-of the Simplified BSD License. See the LICENSE.rst file for the complete
-license.
+This is free software. You are permitted to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of it, under the
+terms of the MIT License. See `LICENSE.rst`_ for the complete license.
 
 This software is provided WITHOUT ANY WARRANTY; without even the implied
-warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-LICENSE.rst file for the complete disclaimer.
+warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+`LICENSE.rst`_ for the complete disclaimer.
+
+.. _LICENSE.rst: https://github.com/susam/ice/blob/master/LICENSE.rst
 
 
 Tutorial
@@ -78,7 +79,7 @@ Getting started
 The simplest way to get started with an ice application is to write a
 minimal application that serves a default web page.
 
-.. code:: python 
+.. code:: python
 
     import ice
     app = ice.cube()
@@ -143,7 +144,7 @@ Literal routes
 The following application overrides the default 'It works!' page for /
 with a custom page. Additionally, it sets up a route for /foo.
 
-.. code:: python 
+.. code:: python
 
     import ice
     app = ice.cube()
@@ -192,7 +193,7 @@ anonymous wildcard because there is no name associated with this
 wildcard. The part of the request path matched by an anonymous wildcard
 is passed as a positional argument to the route's callable.
 
-.. code:: python 
+.. code:: python
 
     import ice
     app = ice.cube()
@@ -229,7 +230,7 @@ wildcard. The part of the request path matched by a named wildcard is
 passed as a keyword argument, with the same name as that of the
 wildcard, to the route's callable.
 
-.. code:: python 
+.. code:: python
 
     import ice
     app = ice.cube()
@@ -249,7 +250,7 @@ with an anonymous wildcard. The following example code clearly
 demonstrates how matches due to anonymous wildcards are passed
 differently from the matches due to named wildcards.
 
-.. code:: python 
+.. code:: python
 
     import ice
     app = ice.cube()
@@ -310,7 +311,7 @@ A wildcard with exclamation mark, ``!``, as its name is a throwaway
 wildcard. The part of the request path matched by a throwaway wildcard
 is not passed to the route's callable. *They are thrown away!*
 
-.. code:: python 
+.. code:: python
 
     import ice
     app = ice.cube()
