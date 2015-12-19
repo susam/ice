@@ -117,18 +117,19 @@ In this document, a request path is defined as the part of the URL after
 the domain name and before the query string. For example, in a request
 for http://localhost:8080/foo/bar?x=10, the request path is /foo/bar.
 
-A route is used to map an HTTP request to a Python callable. A route
-consists of three objects:
+A route is used to map an HTTP request to a Python callable. This
+callable is also known as the route handler. A route consists of three
+objects:
 
 1. HTTP request method, e.g. ``'GET'``, ``'POST'``.
 2. Request path pattern, e.g. ``'/foo'``, ``'/post/<id>'``, ``'/(.*)'``.
-3. Callable, e.g. Python function
+3. Route handler, a Python callable object, e.g. Python function
 
 A route is said to match a request path when the request pattern of the
 route matches the request path. When a client makes a request to an ice
-application, if a route matches the request path, then the callable of
-the route is invoked and the value returned by the callable is used to
-send a response to the client.
+application, if a route matches the request path, then the route's
+handler is invoked and the value returned by the route's handler is used
+to send a response to the client.
 
 The request path pattern of a route can be specified in one of three
 ways:
@@ -191,7 +192,7 @@ wildcard route that matches request path of the form ``/`` followed by
 any string devoid of ``/``, ``<`` and ``>``. The characters ``<>`` is an
 anonymous wildcard because there is no name associated with this
 wildcard. The part of the request path matched by an anonymous wildcard
-is passed as a positional argument to the route's callable.
+is passed as a positional argument to the route's handler.
 
 .. code:: python
 
@@ -228,7 +229,7 @@ Named wildcards
 A wildcard with a valid Python identifier as its name is called a named
 wildcard. The part of the request path matched by a named wildcard is
 passed as a keyword argument, with the same name as that of the
-wildcard, to the route's callable.
+wildcard, to the route's handler.
 
 .. code:: python
 
@@ -300,7 +301,7 @@ following text.
 
 Note: Since parts of the request path matched by anonymous wildcards are
 passed as positional arguments and parts of the request path matched by
-named wildcards are passed as keyword arguments to the route's callable,
+named wildcards are passed as keyword arguments to the route's handler,
 it is required by the Python language that all positional arguments
 must come before all keyword arguments in the function definition.
 However, the wildcards may appear in any order in the route's pattern.
@@ -309,7 +310,7 @@ Throwaway wildcard
 ''''''''''''''''''
 A wildcard with exclamation mark, ``!``, as its name is a throwaway
 wildcard. The part of the request path matched by a throwaway wildcard
-is not passed to the route's callable. *They are thrown away!*
+is not passed to the route's handler. *They are thrown away!*
 
 .. code:: python
 
@@ -358,7 +359,7 @@ the following text.
     | page_id: python
 
 There are three wildcards in the route's request path pattern but there
-is only one argument in the route's callable because two out of the
+is only one argument in the route's handler because two out of the
 three wildcards are throwaway wildcards.
 
 Wildcard specification
@@ -373,12 +374,12 @@ The following rules describe how a wildcard is interpreted.
 3.  Either a valid Python identifier or the exclamation mark, ``!``,
     must be specified as *name*.
 4.  If *name* is missing, the part of the request path matched by the
-    wildcard is passed as a positional argument to the route's callable.
+    wildcard is passed as a positional argument to the route's handler.
 5.  If *name* is present and it is a valid Python identifier, the part
     of the request path matched by the wildcard is passed as a keyword
-    argument to the route's callable.
+    argument to the route's handler.
 6.  If *name* is present and it is ``!``, the part of the request path
-    matched by the wildcard is not passed to the route's callable.
+    matched by the wildcard is not passed to the route's handler.
 7.  If *name* is present but it is neither ``!`` nor a valid Python
     identifier, ice.RouteError is raised.
 8.  If *type* is present, it must be preceded by ``:`` (colon).
@@ -388,13 +389,13 @@ The following rules describe how a wildcard is interpreted.
 11. If *type* is ``str``, it matches a string of one or more characters
     such that none of the characters is ``/``. The path of the request
     path matched by the wildcard is passed as an ``str`` object to the
-    route's callable.
+    route's handler.
 12. If *type* is ``path``, it matches a string of one or more characters
     that may contain ``/``. The path of the request path matched by the
-    wildcard is passed as an ``str`` object to the route's callable.
+    wildcard is passed as an ``str`` object to the route's handler.
 13. If *type* is ``int``, ``+int`` or ``-int``, the path of the request
     path matched by the wildcard is passed as an ``int`` object to the
-    route's callable.
+    route's handler.
 14. If *type* is ``+int``, the wildcard matches a positive integer
     beginning with a non-zero digit.
 15. If *type* is ``int``, the wildcard matches ``0`` as well as
@@ -445,7 +446,7 @@ Regular expression routes
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 The following code demonstrates a simple regular expression based route.
 The part of the request path matched by a non-symbolic capturing group
-is passed as a positional argument to the route's callable.
+is passed as a positional argument to the route's handler.
 
 .. code:: python
 
@@ -501,7 +502,7 @@ following text.
 Note: Since parts of the request path matched by non-symbolic capturing
 groups are passed as positional arguments and parts of the request path
 matched by symbolic capturing groups are passed as keyword arguments to
-the route's callable, it is required by the Python language that all
+the route's handler, it is required by the Python language that all
 positional arguments must come before all keyword arguments in the
 function definition. However, the capturing groups may appear in any
 order in the route's pattern.
@@ -807,25 +808,25 @@ displays a page with the following text.
 Status codes
 ------------
 In all the examples above, the response message body is returned as a
-string from a route's callable. It is also possible to return the
-response status code as an integer. In other words, a route's callable
+string from a route's handler. It is also possible to return the
+response status code as an integer. In other words, a route's handler
 must either return a string or an integer. When a string is returned, it
 is sent as response message body to the client. When an integer is
 returned and it is a valid HTTP status code, an HTTP response with this
 status code is sent to the client. If the value returned by a route's
-callable is neither a string nor an integer representing a valid HTTP
+handler is neither a string nor an integer representing a valid HTTP
 status code, then an error is raised.
 
 Therefore there are two ways to return an HTTP response from a route's
-callable.
+handler.
 
 1. Return message body and optionally set status code. This is the
    preferred way of returning content for normal HTTP responses (200
-   OK). If the status code is not set explicitly in a route's callable,
+   OK). If the status code is not set explicitly in a route's handler,
    then it has a default value of 200.
 2. Return status code and optionally set message body. This is the
    preferred way of returning content for HTTP errors. If the message
-   body is not set explicitly in a route's callable, then the error
+   body is not set explicitly in a route's handler, then the error
    handler for the returned status code is invoked to return a message
    body.
 
