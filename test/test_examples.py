@@ -522,3 +522,70 @@ class ExamplesTest(unittest.TestCase):
         with self.assertRaises(urllib.error.HTTPError) as cm:
             urllib.request.urlopen('http://localhost:8080/code/%2e%2e/foo.txt')
         self.assertEqual(cm.exception.code, 403)
+
+    def test_download_example1(self):
+        app = self.app
+
+        # Example
+        @app.get('/foo')
+        def foo():
+            return app.download('hello, world', 'foo.txt')
+
+        @app.get('/bar')
+        def bar():
+            return app.download('hello, world', 'bar',
+                                media_type='text/plain', charset='ISO-8859-1')
+
+        # Test
+        self.run_app()
+        response = urllib.request.urlopen('http://localhost:8080/foo')
+        self.assertEqual(response.getheader('Content-Disposition'),
+                         'attachment; filename="foo.txt"')
+        self.assertEqual(response.getheader('Content-Type'),
+                         'text/plain; charset=UTF-8')
+        self.assertEqual(b'hello, world', response.read())
+
+        response = urllib.request.urlopen('http://localhost:8080/bar')
+        self.assertEqual(response.getheader('Content-Disposition'),
+                         'attachment; filename="bar"')
+        self.assertEqual(response.getheader('Content-Type'),
+                         'text/plain; charset=ISO-8859-1')
+        self.assertEqual(b'hello, world', response.read())
+
+    def test_download_example2(self):
+        app = self.app
+
+        # Example
+        @app.get('/code/<:path>')
+        def send_download(path):
+            return app.download(app.static(data.dirpath, path))
+
+        # Test
+        self.run_app()
+        response = urllib.request.urlopen('http://localhost:8080/code/foo.txt')
+        self.assertEqual(response.getheader('Content-Disposition'),
+                         'attachment; filename="foo.txt"')
+        self.assertEqual(response.getheader('Content-Type'),
+                         'text/plain; charset=UTF-8')
+        self.assertEqual(b'foo\n', response.read())
+
+    def test_download_example3(self):
+        app = self.app
+
+        # Example
+        @app.get('/<!:path>')
+        def send_download():
+            return app.download('hello, world')
+
+        # Test
+        self.run_app()
+        response = urllib.request.urlopen('http://localhost:8080/foo.txt')
+        self.assertEqual(response.getheader('Content-Disposition'),
+                         'attachment; filename="foo.txt"')
+        self.assertEqual(response.getheader('Content-Type'),
+                         'text/plain; charset=UTF-8')
+        self.assertEqual(b'hello, world', response.read())
+
+        with self.assertRaises(urllib.error.HTTPError) as cm:
+            r = urllib.request.urlopen('http://localhost:8080/foo/')
+        self.assertEqual(cm.exception.code, 500)

@@ -353,7 +353,7 @@ wildcard may be used with other wildcards.
         app.run()
 
 After running this application, visiting
-http://localhost:8080/snowman/articles/python should display a page with
+http://localhost:8080/snowman/articles/python displays a page with
 the following text.
 
     | page_id: python
@@ -951,7 +951,7 @@ Here is an example.
     if __name__ == '__main__':
         app.run()
 
-The first argument to the ``static()`` method must specify the path to
+The first argument to the ``static()`` method is the path to
 what is known as the document root directory. This is very important to
 prevent `directory traversal attack`_. This method guarantees that only
 files within the document root directory are served and no files outside
@@ -970,7 +970,7 @@ this file as response.
 However, visiting http://localhost:8080/code/%2e%2e/foo.txt would
 display a '403 Forbidden' page because this request attempts to access
 foo.txt in the parent directory of the document directory (``%2e%2d`` is
-URL encoding of ``..``).
+the URL encoding of ``..``).
 
 In the above example, the 'Content-Type' header of the response is
 automatically set to 'text/plain; charset=UTF-8'. With only two
@@ -1017,3 +1017,104 @@ The above code guarantees that the 'Content-Type' header of a request to
 http://localhost:8080/code/data/foo.c is set to
 'text/plain; charset=ISO-8859-1' regardless of how the media type of a
 .c file is defined in the system configuration files.
+
+
+Downloads
+---------
+The ``download()`` method may be used to force a client, e.g. a browser,
+to prompt the user to save the returned content locally as a file. Here
+is an example.
+
+.. code:: python
+
+    import ice
+    app = ice.cube()
+
+    @app.get('/foo')
+    def foo():
+        return app.download('hello, world', 'foo.txt')
+
+    @app.get('/bar')
+    def bar():
+        return app.download('hello, world', 'bar',
+                            media_type='text/plain', charset='ISO-8859-1')
+
+    if __name__ == '__main__':
+        app.run()
+
+The first argument to the ``download()`` method is the content to
+return, specified as a string or sequence of bytes. The second argument
+is the filename that the client should use to save the returned content.
+
+The discussion about media type and character set described in the
+previous section for the ``static()`` method applies to the
+``download()`` method too.
+
+Visiting http://localhost:8080/foo with a standard browser displays a
+prompt to download and save a file called foo.txt. Visiting
+http://localhost:8080/bar displays a prompt to download and save a file
+called bar.txt.
+
+Since the first argument may be a sequence of bytes, it is quite simple
+to return a static file for download. The ``static()`` method usually
+returns a sequence of bytes which can be passed directly to the
+``download()`` method. The ``static()`` method may return an HTTP status
+code, e.g. 403 and 404, which is handled gracefully by the
+``download()`` method in order to return an error page as response.
+
+.. code:: python
+
+    import ice
+    app = ice.cube()
+
+    @app.get('/code/<:path>')
+    def send_download(path):
+        return app.download(app.static('/var/www/project/code', path))
+
+    if __name__ == '__main__':
+        app.run()
+
+Note that in the above example, no filename argument is specified for
+the ``download()`` method. The path argument that was specified in the
+``static()`` call is automatically used to obtain the filename for the
+``download()`` call.
+
+If there is a file called /var/www/project/code/data/foo.txt, then
+visiting http://localhost:8080/code/data/foo.txt with a standard browser
+displays a prompt to download and save a file called foo.txt.
+
+Here are the complete set of rules that determine the filename that is
+used for the download. The rules are followed in the specified order.
+
+1. If the *filename* argument is specified, the base name from this
+   argument, i.e. ``os.path.basename(filename)``, is used as the
+   filename for the download.
+2. If the *filename* argument is not specified, the base name from the
+   file path specified to a previous *static()* method call made while
+   handling the current request is used.
+3. If the *filename* argument is not specified and there was no
+   ``static()`` call made previously for the current request, then the
+   base name from the current HTTP request path is used.
+4. As a result of the above three steps, if the resultant *filename*
+   turns out to be empty, then ice.LogicError is raised.
+
+The first two points have been demonstrated in the previous two examples
+above. The last two points are demonstrated in the following example.
+
+.. code:: python
+
+    import ice
+    app = ice.cube()
+
+    @app.get('/<!:path>')
+    def send_download():
+        return app.download('hello, world')
+
+    if __name__ == '__main__':
+        app.run()
+
+Visiting http://localhost:8080/foo.txt with a standard browser would
+download a file foo.txt. However, visiting http://localhost:8080/foo/
+would display an error due to the unhandled ice.LogicError that is
+raised because no filename can be determined from the request path /foo/
+which refers to a directory, not a file.

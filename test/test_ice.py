@@ -341,3 +341,138 @@ class IceTest(unittest.TestCase):
             ('Content-Length', str(len(expected)))
         ])
         self.assertEqual(r, [expected.encode()])
+
+    def test_download_with_filename_argument(self):
+        app = ice.Ice()
+
+        expected1 = 'foo'
+        expected2 = 'echo "hi"'
+
+        @app.get('/')
+        def foo():
+            return app.download(expected1, 'foo.txt')
+
+        @app.get('/bar')
+        def bar():
+            return app.download(expected2, 'foo.sh', 'text/plain')
+
+        m = unittest.mock.Mock()
+
+        r = app({'REQUEST_METHOD': 'GET', 'PATH_INFO': '/'}, m)
+        m.assert_called_with('200 OK', [
+            ('Content-Disposition', 'attachment; filename="foo.txt"'),
+            ('Content-Type', 'text/plain; charset=UTF-8'),
+            ('Content-Length', str(len(expected1)))
+        ])
+        self.assertEqual(r, [expected1.encode()])
+
+        r = app({'REQUEST_METHOD': 'GET', 'PATH_INFO': '/bar'}, m)
+        m.assert_called_with('200 OK', [
+            ('Content-Disposition', 'attachment; filename="foo.sh"'),
+            ('Content-Type', 'text/plain; charset=UTF-8'),
+            ('Content-Length', str(len(expected2)))
+        ])
+        self.assertEqual(r, [expected2.encode()])
+
+    def test_download_without_filename_argument(self):
+        app = ice.Ice()
+
+        @app.get('/<!>')
+        def foo():
+            return app.download('foo')
+
+        m = unittest.mock.Mock()
+        expected = 'foo'
+
+        r = app({'REQUEST_METHOD': 'GET', 'PATH_INFO': '/foo.txt'}, m)
+        m.assert_called_with('200 OK', [
+            ('Content-Disposition', 'attachment; filename="foo.txt"'),
+            ('Content-Type', 'text/plain; charset=UTF-8'),
+            ('Content-Length', str(len(expected)))
+        ])
+        self.assertEqual(r, [expected.encode()])
+
+        r = app({'REQUEST_METHOD': 'GET', 'PATH_INFO': '/foo.css'}, m)
+        m.assert_called_with('200 OK', [
+            ('Content-Disposition', 'attachment; filename="foo.css"'),
+            ('Content-Type', 'text/css; charset=UTF-8'),
+            ('Content-Length', str(len(expected)))
+        ])
+        self.assertEqual(r, [expected.encode()])
+
+    def test_download_without_filename(self):
+        app = ice.Ice()
+
+        @app.get('/')
+        def foo():
+            return app.download('foo')
+
+        m = unittest.mock.Mock()
+        expected = 'foo'
+        with self.assertRaises(ice.LogicError) as cm:
+            app({'REQUEST_METHOD': 'GET', 'PATH_INFO': '/'}, m)
+            self.assertEqual(str(cm.exception),
+                             'Cannot determine filename for download')
+
+    def test_download_static(self):
+        app = ice.Ice()
+
+        @app.get('/')
+        def foo():
+            return app.download(app.static(data.dirpath, 'foo.txt'))
+
+        m = unittest.mock.Mock()
+        expected = 'foo\n'
+        r = app({'REQUEST_METHOD': 'GET', 'PATH_INFO': '/'}, m)
+        m.assert_called_with('200 OK', [
+            ('Content-Disposition', 'attachment; filename="foo.txt"'),
+            ('Content-Type', 'text/plain; charset=UTF-8'),
+            ('Content-Length', str(len(expected)))
+        ])
+        self.assertEqual(r, [expected.encode()])
+
+    def test_download_with_status_code(self):
+        app = ice.Ice()
+
+        # Return an error from app.static.
+        @app.get('/')
+        def foo():
+            return app.download(app.static(data.dirpath, 'nonexistent.txt'))
+
+        # Return an error status code.
+        @app.get('/bar')
+        def bar():
+            return app.download(410)
+
+        # Set body and return status code 200.
+        @app.get('/baz')
+        def baz():
+            app.response.body =  'baz'
+            return app.download(200, 'baz.txt')
+
+        m = unittest.mock.Mock()
+
+        expected = '404 Not Found'
+        r = app({'REQUEST_METHOD': 'GET', 'PATH_INFO': '/'}, m)
+        m.assert_called_with(expected, [
+            ('Content-Type', 'text/plain; charset=UTF-8'),
+            ('Content-Length', str(len(expected)))
+        ])
+        self.assertEqual(r, [expected.encode()])
+
+        expected = '410 Gone'
+        r = app({'REQUEST_METHOD': 'GET', 'PATH_INFO': '/bar'}, m)
+        m.assert_called_with(expected, [
+            ('Content-Type', 'text/plain; charset=UTF-8'),
+            ('Content-Length', str(len(expected)))
+        ])
+        self.assertEqual(r, [expected.encode()])
+
+        expected = 'baz'
+        r = app({'REQUEST_METHOD': 'GET', 'PATH_INFO': '/baz'}, m)
+        m.assert_called_with('200 OK', [
+            ('Content-Disposition', 'attachment; filename="baz.txt"'),
+            ('Content-Type', 'text/plain; charset=UTF-8'),
+            ('Content-Length', str(len(expected)))
+        ])
+        self.assertEqual(r, [expected.encode()])

@@ -196,6 +196,11 @@ class Ice:
         root = os.path.abspath(os.path.join(root, ''))
         path = os.path.abspath(os.path.join(root, path.lstrip('/\\')))
 
+        # Save the filename from the path in the response state, so that
+        # a following download() call can default to this filename for
+        # downloadable file when filename is not explicitly specified.
+        self.response.state['filename'] = os.path.basename(path)
+
         if not path.startswith(root):
             return 403
         elif not os.path.isfile(path):
@@ -209,6 +214,59 @@ class Ice:
 
         with open(path, 'rb') as f:
             return f.read()
+
+    def download(self, content, filename=None,
+                 media_type=None, charset='UTF-8'):
+        """Send content as attachment (downloadable file).
+
+        The specified content is sent after setting Content-Disposition
+        header such that the client prompts the user to save the content
+        locally as a file. If there are directory path separators in
+        filename, only the base name is used for this purpose.
+
+        If filename is specified as None (which is the default), then
+        the filename obtained from a previous static() method call made
+        while handling the current request is used. If no such call was
+        made in the current request, then the filename is obtained from
+        the request path. If the request path contains a directory only,
+        i.e. ends with a slash, then LogicError is raised.
+
+        The media_type and charset arguments are used to set the
+        Content-Type header of the HTTP response. If media_type argument
+        is specified as None (which is the default), then media_type is
+        guessed from the filename of the file to be returned.
+
+        content    -- Content to be sent as file to be saved or HTTP
+                      status code (type: str or int)
+        filename   -- Filename to use for saving the content (type: str)
+        media_type -- Media type of file (default: None) (type: str)
+        charset    -- Character set of file (default: 'UTF-8') (type: str)
+
+        Return: content, i.e. the first argument is returned (type: str)
+
+        Raise:
+        LogicError -- When filename for the download cannot be determined
+        """
+        if isinstance(content, int) and content != 200:
+            return content
+        if filename is not None:
+            filename = os.path.basename(filename)
+        elif 'filename' in self.response.state:
+            filename = self.response.state['filename']
+        else:
+            filename = os.path.basename(self.request.path)
+
+        if filename == '':
+            raise LogicError('Cannot determine filename for download')
+
+        if media_type is not None:
+            self.response.media_type = media_type
+        else:
+            self.response.media_type = mimetypes.guess_type(filename)[0]
+        self.response.charset = charset
+        self.response.add_header('Content-Disposition', 'attachment; '
+                                 'filename="{}"'.format(filename))
+        return content
 
     def __call__(self, environ, start_response):
         """Respond to a request.
@@ -602,6 +660,7 @@ class Response:
         self.charset = 'UTF-8'
         self._headers = []
         self.body = None
+        self.state = {}
 
     def response(self):
         """Return the HTTP response body.
@@ -614,13 +673,13 @@ class Response:
             out = self.body.encode(self.charset)
         else:
             out = b''
-        self._add_header('Content-Type', self.content_type)
-        self._add_header('Content-Length', str(len(out)))
+        self.add_header('Content-Type', self.content_type)
+        self.add_header('Content-Length', str(len(out)))
 
         self.start(self.status_line, self._headers)
         return [out]
 
-    def _add_header(self, name, value):
+    def add_header(self, name, value):
         """Add an HTTP header to response object.
 
         Arguments:
@@ -713,3 +772,7 @@ class Error(Exception):
 
 class RouteError(Error):
     """Route related exception."""
+
+
+class LogicError(Error):
+    """Logical error due to a bug in the code that uses this module."""
