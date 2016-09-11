@@ -10,7 +10,7 @@ build:
 install:
 	$(PYTHON) setup.py install --record install.txt
 
-quicktest:
+test: .FORCE
 	$(PYTHON) -m unittest -vf
 
 coverage:
@@ -31,3 +31,7 @@ clean:
 	rm -rf .coverage htmlcov
 	find . -name "__pycache__" -exec rm -r {} +
 	find . -name "*.pyc" -exec rm {} +
+
+.FORCE:
+
+# vim: noet

@@ -5,3 +5,5 @@ __pycache__/
 /MANIFEST
 /dist/
 /build/
+/htmlcov/
+/docs/_build/

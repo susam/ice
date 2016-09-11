@@ -49,22 +49,27 @@ import mimetypes
 def cube():
     """Return an Ice application with a default home page.
 
-    This function returns an object of class Ice. It creates an Ice
-    object, adds a route to return the default page when a client
-    requests / using HTTP GET method, adds an error handler to return
-    HTTP error pages when an error occurs and returns this object. The
-    returned object may be used as a WSGI application.
+    Create :class:`Ice` object, add a route to return the default page
+    when a client requests the server root, i.e. /, using HTTP GET
+    method, add an error handler to return HTTP error pages when an
+    error occurs and return this object. The returned object can be used
+    as a WSGI application.
+
+    Returns:
+      Ice: WSGI application.
     """
     app = Ice()
 
     @app.get('/')
     def default_home_page():
+        """Return a default home page."""
         return simple_html('It works!',
                            '<h1>It works!</h1>\n'
                            '<p>This is the default ice web page.</p>')
 
     @app.error()
     def generic_error_page():
+        """Return a simple and generic error page."""
         return simple_html(app.response.status_line,
                            '<h1>{title}</h1>\n'
                            '<p>{description}</p>\n'
@@ -75,6 +80,7 @@ def cube():
                            version=__version__))
 
     def simple_html(title, body):
+        """Return a simple HTML page."""
         return (
             '<!DOCTYPE html>\n'
             '<html>\n<head><title>{title}</title></head>\n'
@@ -94,32 +100,45 @@ class Ice:
 
     def __init__(self):
         """Initialize the application."""
-        self.router = Router()
-        self.server = None
+        self._router = Router()
+        self._server = None
         self._error_handlers = {}
 
     def run(self, host='127.0.0.1', port=8080):
-        """Run the application using a simple WSGI server."""
+        """Run the application using a simple WSGI server.
+
+        Arguments:
+          host (str, optional): Host on which to listen.
+          port (int, optional): Port number on which to listen.
+        """
         from wsgiref import simple_server
-        self.server = simple_server.make_server(host, port, self)
-        self.server.serve_forever()
+        self._server = simple_server.make_server(host, port, self)
+        self._server.serve_forever()
 
     def exit(self):
         """Stop the simple WSGI server running the appliation."""
-        if self.server is not None:
-            self.server.shutdown()
-            self.server.server_close()
-            self.server = None
+        if self._server is not None:
+            self._server.shutdown()
+            self._server.server_close()
+            self._server = None
 
     def running(self):
-        """Return true iff the simple WSGI server is running."""
-        return self.server is not None
+        """Return ``True`` iff simple WSGI server is running.
+
+        Returns:
+          bool: ``True`` if simple WSGI server associated with this
+          application is running, ``False`` otherwise.
+        """
+        return self._server is not None
 
     def get(self, pattern):
         """Decorator to add route for an HTTP GET request.
 
         Arguments:
-        pattern -- Routing pattern the path must match (type: str)
+          pattern (str): Routing pattern the path must match.
+
+        Returns:
+          function: Decorator to add route for HTTP GET request.
         """
         return self.route('GET', pattern)
 
@@ -127,7 +146,10 @@ class Ice:
         """Decorator to add route for an HTTP POST request.
 
         Arguments:
-        pattern -- Routing pattern the path must match (type: str)
+          pattern (str): Routing pattern the path must match.
+
+        Returns:
+          function: Decorator to add route for HTTP POST request.
         """
         return self.route('POST', pattern)
 
@@ -135,23 +157,24 @@ class Ice:
         """Decorator to add route for a request with any HTTP method.
 
         Arguments:
-        method  -- HTTP method name, e.g. GET, POST, etc. (type: str)
-        pattern -- Routing pattern the path must match (type: str)
+          method (str): HTTP method name, e.g. GET, POST, etc.
+          pattern (str): Routing pattern the path must match.
 
-        Return: Decorator function (type: function)
+        Returns:
+          function: Decorator function to add route.
         """
         def decorator(callback):
-            self.router.add(method, pattern, callback)
+            self._router.add(method, pattern, callback)
             return callback
         return decorator
 
     def error(self, status=None):
         """Decorator to add a callback that generates error page.
 
-        The status parameter specifies the HTTP response code for which
-        the decorated callback should be invoked. If the status argument
-        is specified as None, then the decorated callable is considered
-        to be a fallback callback.
+        The *status* parameter specifies the HTTP response status code
+        for which the decorated callback should be invoked. If the
+        *status* argument is not specified, then the decorated callable
+        is considered to be a fallback callback.
 
         A fallback callback, when defined, is invoked to generate the
         error page for any HTTP response representing an error when
@@ -159,8 +182,10 @@ class Ice:
         code of the HTTP response.
 
         Arguments:
-        status -- HTTP response status code, e.g. 404, 500. (type: int);
-                  None to decorate a fallback error handler
+          status(int, optional): HTTP response status code.
+
+        Returns:
+          function: Decorator function to add error handler.
         """
         def decorator(callback):
             self._error_handlers[status] = callback
@@ -170,28 +195,29 @@ class Ice:
     def static(self, root, path, media_type=None, charset='UTF-8'):
         """Send content of a static file as response.
 
-        The path to what is known as the document root directory should
-        be specified as the root argument. This is very important to
-        prevent directory traversal attack. This method guarantees that
-        only files within the document root directory are served and no
-        files outside this directory can be accessed by a client.
+        The path to the document root directory should be specified as
+        the root argument. This is very important to prevent directory
+        traversal attack. This method guarantees that only files within
+        the document root directory are served and no files outside this
+        directory can be accessed by a client.
 
         The path to the actual file to be returned should be specified
         as the path argument. This path must be relative to the document
         directory.
 
-        The media_type and charset arguments are used to set the
-        Content-Type header of the HTTP response. If media_type argument
-        is specified as None (which is the default), then media_type is
-        guessed from the filename of the file to be returned.
+        The *media_type* and *charset* arguments are used to set the
+        Content-Type header of the HTTP response. If *media_type*
+        is not specified or specified as ``None`` (the default), then it
+        is guessed from the filename of the file to be returned.
 
         Arguments:
-        root       -- Path to document root directory (type: str)
-        path       -- Path to file relative to document root (type: str)
-        media_type -- Media type of file (default: None) (type: str)
-        charset    -- Character set of file (default: 'UTF-8') (type: str)
+          root (str): Path to document root directory.
+          path (str): Path to file relative to document root directory.
+          media_type (str, optional): Media type of file.
+          charset (str, optional): Character set of file.
 
-        Return: Content of file to be returned as bytes (type: bytes)
+        Returns:
+          bytes: Content of file to be returned in the HTTP response.
         """
         root = os.path.abspath(os.path.join(root, ''))
         path = os.path.abspath(os.path.join(root, path.lstrip('/\\')))
@@ -219,33 +245,45 @@ class Ice:
                  media_type=None, charset='UTF-8'):
         """Send content as attachment (downloadable file).
 
-        The specified content is sent after setting Content-Disposition
-        header such that the client prompts the user to save the content
-        locally as a file. If there are directory path separators in
-        filename, only the base name is used for this purpose.
+        The *content* is sent after setting Content-Disposition header
+        such that the client prompts the user to save the content
+        locally as a file. An HTTP response status code may be specified
+        as *content*. If the status code is not ``200``, then this
+        method does nothing and returns the status code.
 
-        If filename is specified as None (which is the default), then
-        the filename obtained from a previous static() method call made
-        while handling the current request is used. If no such call was
-        made in the current request, then the filename is obtained from
-        the request path. If the request path contains a directory only,
-        i.e. ends with a slash, then LogicError is raised.
+        The filename used for the download is determined according to
+        the following rules. The rules are followed in the specified
+        order.
 
-        The media_type and charset arguments are used to set the
-        Content-Type header of the HTTP response. If media_type argument
-        is specified as None (which is the default), then media_type is
-        guessed from the filename of the file to be returned.
+          1. If *filename* is specified, then the base name from this
+             argument, i.e. ``os.path.basename(filename)``, is used as the
+             filename for the download.
+          2. If *filename* is not specified or specified as ``None``
+             (the default), then the base name from the file path
+             specified to a previous :meth:`static` call made while
+             handling the current request is used.
+          3. If *filename* is not specified and there was no
+             :meth:`static` call made previously for the current
+             request, then the base name from the current HTTP request
+             path is used.
+          4. As a result of the above steps, if the resultant *filename*
+             turns out to be empty, then :exc:`ice.LogicError` is raised.
 
-        content    -- Content to be sent as file to be saved or HTTP
-                      status code (type: str or int)
-        filename   -- Filename to use for saving the content (type: str)
-        media_type -- Media type of file (default: None) (type: str)
-        charset    -- Character set of file (default: 'UTF-8') (type: str)
+        The *media_type* and *charset* arguments are used in the same
+        manner as they are used in :meth:`static`.
 
-        Return: content, i.e. the first argument is returned (type: str)
+        Arguments:
+          content (str, bytes or int): Content to be sent as download or
+            HTTP status code of the response to be returned.
+          filename (str): Filename to use for saving the content
+          media_type (str, optional): Media type of file.
+          charset (str, optional): Character set of file.
 
-        Raise:
-        LogicError -- When filename for the download cannot be determined
+        Returns:
+          content, i.e. the first argument passed to this method.
+
+        Raises:
+          LogicError: When filename cannot be determined.
         """
         if isinstance(content, int) and content != 200:
             return content
@@ -269,32 +307,31 @@ class Ice:
         return content
 
     def __call__(self, environ, start_response):
-        """Respond to a request.
+        """Respond to an HTTP request.
 
         Arguments:
-        environ        -- Dictionary of environment variables
-                          (type: dict)
-        start_response -- Callable to start HTTP response
-                          (type: callable)
+          environ (dict): Dictionary of environment variables
+          start_response (callable): Callable to start HTTP response
 
-        Return: List of one byte string (type: list)
+        Returns:
+          list: List containing a single sequence of bytes.
         """
         self.request = Request(environ)
         self.response = Response(start_response)
 
-        route = self.router.resolve(self.request.method,
-                                    self.request.path)
+        route = self._router.resolve(self.request.method,
+                                     self.request.path)
         if route is not None:
             callback, args, kwargs = route
             value = callback(*args, **kwargs)
-        elif self.router.contains_method(self.request.method):
+        elif self._router.contains_method(self.request.method):
             value = 404 # Not found
         else:
             value = 501 # Not Implemented
 
         if isinstance(value, str) or isinstance(value, bytes):
             self.response.body = value
-        elif isinstance(value, int) and value in Response.responses:
+        elif isinstance(value, int) and value in Response._responses:
             self.response.status = value
             if self.response.body is None:
                 self.response.body = self._get_error_page_callback()()
@@ -306,10 +343,7 @@ class Ice:
         return self.response.response()
 
     def _get_error_page_callback(self):
-        """Return an error page for the current response status.
-
-        Return: Callback that returns str (type: callable)
-        """
+        """Return an error page for the current response status."""
         if self.response.status in self._error_handlers:
             return self._error_handlers[self.response.status]
         elif None in self._error_handlers:
@@ -334,10 +368,10 @@ class Router:
         """Add a route.
 
         Arguments:
-        method   -- HTTP method, e.g. GET, POST, etc. (type: str)
-        pattern  -- Pattern for which the callback should be invoked
-                    (type: str)
-        callback -- Callback (type: callable)
+          method (str): HTTP method, e.g. GET, POST, etc.
+          pattern (str): Pattern that request paths must match.
+          callback (str): Route handler that is invoked when a request
+            path matches the *pattern*.
         """
         pat_type, pat = self._normalize_pattern(pattern)
         if pat_type == 'literal':
@@ -347,46 +381,56 @@ class Router:
         else:
             self._regex[method].append(RegexRoute(pat, callback))
 
-    def resolve(self, method, path):
-        """Resolve a request to a callback registered for the request.
+    def contains_method(self, method):
+        """Check if there is at least one handler for *method*.
 
         Arguments:
-        method -- HTTP method, e.g. GET, POST, etc. (type: str)
-        path   -- Path information in the request (type: str)
+          method (str): HTTP method name, e.g. GET, POST, etc.
 
-        Return: A tuple of three items: the callback, a list of
-                positional arguments and a dictionary of keyword
-                arguments (type: tuple); None if no route matches the
-                request
+        Returns:
+          ``True`` if there is at least one route defined for *method*,
+          ``False`` otherwise
+        """
+        return method in itertools.chain(self._literal, self._wildcard,
+                                         self._regex)
+
+    def resolve(self, method, path):
+        """Resolve a request to a route handler.
+
+        Arguments:
+          method (str): HTTP method, e.g. GET, POST, etc. (type: str)
+          path (str): Request path
+
+        Returns:
+          tuple or None: A tuple of three items:
+
+            1. Route handler (callable)
+            2. Positional arguments (list)
+            3. Keyword arguments (dict)
+
+          ``None`` if no route matches the request.
         """
         if method in self._literal and path in self._literal[method]:
             return self._literal[method][path], [], {}
         else:
             return self._resolve_non_literal_route(method, path)
 
-    def contains_method(self, method):
-        """Determine if a method is supported by the router.
-
-        Arguments:
-        method -- HTTP method name, e.g. GET, POST, etc. (type: str)
-
-        Return: True if there is at least one route defined for the
-                method; False otherwise
-        """
-        return method in itertools.chain(self._literal, self._wildcard,
-                                         self._regex)
 
     def _resolve_non_literal_route(self, method, path):
-        """Resolve a request to a callback for non-literal route.
+        """Resolve a request to a wildcard or regex route handler.
 
         Arguments:
-        method -- HTTP method name, e.g. GET, POST, etc. (type: str)
-        path   -- Path to match existing patterns against (type: str)
+          method (str): HTTP method name, e.g. GET, POST, etc.
+          path (str): Request path
 
-        Return: A tuple of three items: the callback, a list of
-                positional arguments and a dictionary of keyword
-                arguments (type: tuple); None if no wildcard route
-                matches the request
+        Returns:
+          tuple or None: A tuple of three items:
+
+            1. Route handler (callable)
+            2. Positional arguments (list)
+            3. Keyword arguments (dict)
+
+          ``None`` if no route matches the request.
         """
         for route_dict in (self._wildcard, self._regex):
             if method in route_dict:
@@ -398,16 +442,17 @@ class Router:
 
     @staticmethod
     def _normalize_pattern(pattern):
-        """Returned a normalize form of the pattern.
+        """Return a normalized form of the pattern.
 
-        This normalizes the pattern by removing pattern type prefix if
-        it exists in the pattern. It returns the pattern type and the
+        Normalize the pattern by removing pattern type prefix if it
+        exists in the pattern. Then return the pattern type and the
         pattern as a tuple of two strings.
 
         Arguments:
-        pattern -- Request path pattern string (type: str)
+          pattern (str): Route pattern to match request paths
 
-        Return: A tuple of pattern type and pattern (type: tuple)
+        Returns:
+          tuple: Ruple of pattern type (str) and pattern (str)
         """
         if pattern.startswith('regex:'):
             pattern_type = 'regex'
@@ -438,8 +483,8 @@ class WildcardRoute:
         """Initialize wildcard route.
 
         Arguments:
-        pattern  -- Pattern associated with the route (type: str)
-        callback -- Callback associated with the route (type: callable)
+          pattern (str): Pattern associated with the route.
+          callback (callable): Route handler.
         """
         self._re = []
         self._wildcards = []
@@ -454,15 +499,19 @@ class WildcardRoute:
         self._callback = callback
 
     def match(self, path):
-        """Return callback with arguments if path matches this route.
+        """Return route handler with arguments if path matches this route.
 
         Arguments:
-        path -- Request path (type: str)
+          path (str): Request path
 
-        Return: A tuple of three items: the callback, a list of
-                positional arguments and a dictionary of keyword
-                arguments (type: tuple); None if the path does not match
-                the route's request path pattern
+        Returns:
+          tuple or None: A tuple of three items:
+
+            1. Route handler (callable)
+            2. Positional arguments (list)
+            3. Keyword arguments (dict)
+
+          ``None`` if the route does not match the path.
         """
         match = self._re.search(path)
         if match is None:
@@ -481,31 +530,26 @@ class WildcardRoute:
 
     @staticmethod
     def like(pattern):
-        """Determine if a pattern looks like a wildcard based pattern.
+        """Determine if a pattern looks like a wildcard pattern.
 
         Arguments:
-        pattern -- Request path pattern string (type: str)
+          pattern (str): Any route pattern.
 
-        Return: True if the specified pattern looks like a wildcard
-                based pattern; False otherwise (type: bool)
+        Returns:
+          ``True`` if the specified pattern looks like a wildcard pattern,
+          ``False`` otherwise.
         """
         return WildcardRoute._wildcard_re.search(pattern) is not None
 
     @staticmethod
     def tokens(pattern):
-        """Return tokens, that are not forward-slashes, in a pattern.
-
-        Argument:
-        pattern -- Request path pattern string (type: str)
-
-        Return: List of token strings (type: list)
-        """
+        """Return tokens in a pattern."""
         return WildcardRoute._tokenize_re.findall(pattern)
 
 
 class Wildcard:
 
-    """A single wildcard definition in a wildcard route's pattern."""
+    """A single wildcard definition in a wildcard route pattern."""
 
     _types_re = {
         'str': r'([^/]+)',
@@ -520,7 +564,7 @@ class Wildcard:
         """Initialize wildcard definition.
 
         Arguments:
-        spec -- An angle-bracket delimited wildcard specification
+          spec (str): An angle-bracket delimited wildcard specification.
         """
         # Split '<foo:int>' into ['foo', 'int']
         tokens = spec[1:-1].split(':', 1)
@@ -537,10 +581,16 @@ class Wildcard:
                              .format(self._type, spec))
 
     def regex(self):
+        """Convert the wildcard to a regular expression.
+
+        Returns:
+          str: A regular expression that matches strings that the
+          wildcard is meant to match.
+          """
         return Wildcard._types_re[self._type]
 
     def value(self, value):
-        """Convert specified value to a value of proper type.
+        """Convert specified value to a value of wildcard type.
 
         This method does not check if the value matches the wildcard
         type. The caller of this method must ensure that the value
@@ -550,9 +600,10 @@ class Wildcard:
         wildcard type.
 
         Arguments:
-        value -- Value to convert (type: str)
+          value (str): Value to convert.
 
-        Return: Value converted to proper type (type: str or int)
+        Returns:
+          str or int: Converted value.
         """
         return value if self._type in ['str', 'path'] else int(value)
 
@@ -564,25 +615,29 @@ class RegexRoute:
     _group_re = re.compile(r'\(.*\)')
 
     def __init__(self, pattern, callback):
-        """Construct a regex route.
+        """Initialize regular expression route.
 
         Arguments:
-        pattern  -- Pattern associated with the route (type: str)
-        callback -- Callback associated with the route (type: callback)
+          pattern (str): Pattern associated with the route.
+          callback (callable): Route handler.
         """
         self._re = re.compile(pattern)
         self._callback = callback
 
     def match(self, path):
-        """Return callback with arguments if path matches this route.
+        """Return route handler with arguments if path matches this route.
 
         Arguments:
-        path -- Request path (type: str)
+          path (str): Request path
 
-        Return: A tuple of three items: the callback, a list of
-                positional arguments and a dictionary of keyword
-                arguments (type: tuple); None if the path does not match
-                the route's request path pattern
+        Returns:
+          tuple or None: A tuple of three items:
+
+            1. Route handler (callable)
+            2. Positional arguments (list)
+            3. Keyword arguments (dict)
+
+          ``None`` if the route does not match the path.
         """
         match = self._re.search(path)
         if match is None:
@@ -598,25 +653,35 @@ class RegexRoute:
 
     @staticmethod
     def like(pattern):
-        """Determine if a pattern looks like a regex based pattern.
+        """Determine if a pattern looks like a regular expression.
 
         Arguments:
-        pattern -- Routing pattern string (type: str)
+          pattern (str): Any route pattern.
 
-        Return: True if the specified pattern looks like a regex based
-                pattern; False otherwise (type: bool)
+        Returns:
+          ``True`` if the specified pattern looks like a regex,
+          ``False`` otherwise.
         """
         return RegexRoute._group_re.search(pattern) is not None
 
 
 class Request:
 
-    """Current request."""
+    """Current request.
+
+    Attributes:
+      environ (dict): Dictionary of request environment variables.
+      method (str): Request method.
+      path (str): Request path.
+      query (MultiDict): Key-value pairs from query string.
+      form (MultiDict): Key-value pairs from form data in POST request.
+    """
 
     def __init__(self, environ):
         """Initialize the current request object.
 
-        environ -- Dictionary of environment variables (type: dict)
+        Arguments:
+          environ (dict): Dictionary of environment variables.
         """
         self.environ = environ
         self.method = environ.get('REQUEST_METHOD', 'GET')
@@ -639,20 +704,35 @@ class Request:
 
 class Response:
 
-    """Current response."""
+    """Current response.
+
+    Attributes:
+      start (callable): Callable that starts response.
+      status (int): HTTP response status code, defaults to 200.
+      media_type (str): Media type of HTTP response, defaults to
+        'text/html'. This together with :attr:`charset` determines the
+        Content-Type response header.
+      charset (str): Character set of HTTP response, defaults to
+        'UTF-8'. This together with :attr:`media_type` determines the
+        Content-Type response header.
+      body (str or bytes): HTTP response body.
+    """
 
     # Convert HTTP response status codes, phrases and detail in
     # http.server module into a dictionary of objects
     _Status = collections.namedtuple('_Status', ('phrase', 'detail'))
-    responses = {}
+
+    _responses = {}
+
     for k, v in http.server.BaseHTTPRequestHandler.responses.items():
-        responses[k] = _Status(*v)
+        _responses[k] = _Status(*v)
+    del k, v
 
     def __init__(self, start_response_callable):
         """Initialize the current response object.
 
-        start_response_callable -- Callable to start HTTP response
-                                   (type: callable)
+        Arguments:
+          start_response_callable (callable): Callable that starts response.
         """
         self.start = start_response_callable
         self.status = 200
@@ -665,7 +745,8 @@ class Response:
     def response(self):
         """Return the HTTP response body.
 
-        Return: HTTP response body as a sequence of bytes (type: bytes)
+        Returns:
+          bytes: HTTP response body as a sequence of bytes
         """
         if isinstance(self.body, bytes):
             out = self.body
@@ -683,8 +764,8 @@ class Response:
         """Add an HTTP header to response object.
 
         Arguments:
-        name  -- HTTP header field name (type: str)
-        value -- HTTP header field value (type: str)
+          name (str): HTTP header field name
+          value (str): HTTP header field value
         """
         if value is not None:
             self._headers.append((name, value))
@@ -693,24 +774,33 @@ class Response:
     def status_line(self):
         """Return the HTTP response status line.
 
-        Return: Status line (type: str)
+        The status line is determined from :attr:`status` code. For
+        example, if the status code is 200, then '200 OK' is returned.
+
+        Returns:
+          str: Status line
         """
         return (str(self.status) + ' ' +
-                Response.responses[self.status].phrase)
+                Response._responses[self.status].phrase)
 
     @property
     def status_detail(self):
         """Return a description of the current HTTP response status.
 
-        Return: Response status description (type: str)
+        Returns:
+          str: Response status description
         """
-        return Response.responses[self.status].detail
+        return Response._responses[self.status].detail
 
     @property
     def content_type(self):
         """Return the value of Content-Type header field.
 
-        Return: Value of Content-Type header field (type: str)
+        The value for the Content-Type header field is determined from
+        the :attr:`media_type` and :attr:`charset` data attributes.
+
+        Returns:
+          str: Value of Content-Type header field
         """
         if (self.media_type is not None and
             self.media_type.startswith('text/') and
@@ -733,8 +823,8 @@ class MultiDict(collections.UserDict):
         """Adds value to the list of values for the specified key.
 
         Arguments:
-        key   -- Key (type: object)
-        value -- Value (type: object)
+          key (object): Key
+          value (object): Value
         """
         if key not in self.data:
             self.data[key] = [value]
@@ -745,9 +835,10 @@ class MultiDict(collections.UserDict):
         """Return the newest value for the specified key.
 
         Arguments:
-        key -- Key (type: object)
+          key (object): Key
 
-        Return: Newest value for the specified key
+        Returns:
+          object: Newest value for the specified key
         """
         return self.data[key][-1]
 
@@ -755,19 +846,19 @@ class MultiDict(collections.UserDict):
         """Return the list of all values for the specified key.
 
         Arguments:
-        key -- Key (type: object)
+          key (object): Key
+          default (list): Default value to return if the key does not
+            exist, defaults to ``[]``, i.e. an empty list.
 
-        Keyword arguments:
-        default -- Default value to return if the key does not exist
-
-        Return: List of all values for the specified key if the key
-                exists; [] otherwise (type: list)
+        Returns:
+          list: List of all values for the specified key if the key
+          exists, ``default`` otherwise.
         """
         return self.data[key] if key in self.data else default
 
 
 class Error(Exception):
-    """Base class for exceptions used by ice."""
+    """Base class for exceptions."""
 
 
 class RouteError(Error):
@@ -775,4 +866,4 @@ class RouteError(Error):
 
 
 class LogicError(Error):
-    """Logical error due to a bug in the code that uses this module."""
+    """Logical error that can be avoided by careful coding."""
