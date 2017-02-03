@@ -411,8 +411,8 @@ class IceTest(unittest.TestCase):
         expected = 'foo'
         with self.assertRaises(ice.LogicError) as cm:
             app({'REQUEST_METHOD': 'GET', 'PATH_INFO': '/'}, m)
-            self.assertEqual(str(cm.exception),
-                             'Cannot determine filename for download')
+        self.assertEqual(str(cm.exception),
+                         'Cannot determine filename for download')
 
     def test_download_static(self):
         app = ice.Ice()
