@@ -15,7 +15,7 @@ test: .FORCE
 
 coverage:
 	coverage run --branch -m test
-	coverage report
+	coverage report -m
 	coverage html
 
 test-release:

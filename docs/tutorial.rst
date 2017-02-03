@@ -882,6 +882,68 @@ displays a page with the following text.
 
 .. _static-files:
 
+
+Redirects
+---------
+Here is an example that demonstrates how to redirect a client to a
+different URL.
+
+..code:: python
+
+    import ice
+    app = ice.cube()
+
+    @app.get('/foo')
+    def foo():
+        return 303, '/bar'
+
+    @app.get('/bar')
+    def bar():
+        return ('<!DOCTYPE html>'
+                '<html><head><title>Bar</title></head>'
+                '<body><p>Bar</p></body></html>')
+
+    app.run()
+
+After running this application, visiting http://localhost:8080/foo
+with a browser redirects the browser to http://localhost:8080/bar and
+displays a page with the following text.
+
+    | Bar
+
+To send a redirect, the route handler needs to return a tuple such that
+the first item in the tuple is an HTTP status code for redirection and
+the second item is the URL to which the client should be redirected to.
+
+The behaviour of the above code is equivalent to the following code.
+
+..code:: python
+
+    import ice
+    app = ice.cube()
+
+    @app.get('/foo')
+    def foo():
+        app.response.add_header('Location', '/bar')
+        return 303
+
+    @app.get('/bar')
+    def bar():
+        return ('<!DOCTYPE html>'
+                '<html><head><title>Bar</title></head>'
+                '<body><p>Bar</p></body></html>')
+
+    app.run()
+
+Much of the discussion in the :ref:`status-code` section applies to this
+section too, i.e. it is possible to set the status code in
+``app.response.status``, add a Location header and return a
+message body, or add a Location header, set the message body in
+``app.response.body`` and return a status code. However, returning a
+tuple of redirection status code and URL, as shown in the first example
+in this section, is the simplest and preferred way to send a redirect.
+
+
 Static Files
 ------------
 In a typical production environment, a web server may be configured to

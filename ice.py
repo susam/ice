@@ -332,10 +332,23 @@ class Ice:
 
         if isinstance(value, str) or isinstance(value, bytes):
             self.response.body = value
+
         elif isinstance(value, int) and value in Response._responses:
             self.response.status = value
             if self.response.body is None:
                 self.response.body = self._get_error_page_callback()()
+
+        elif (isinstance(value, tuple) and
+              isinstance(value[0], int) and
+              isinstance(value[1], str) and
+              value[0] in Response._responses and
+              300 <= value[0] <= 308):
+
+            self.response.add_header('Location', value[1])
+            self.response.status = value[0]
+            if self.response.body is None:
+                self.response.body = self._get_error_page_callback()()
+
         else:
             raise Error('Route callback for {} {} returned invalid '
                         'value: {}: {!r}'.format(self.request.method,

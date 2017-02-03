@@ -193,6 +193,38 @@ class IceTest(unittest.TestCase):
         self.assertEqual(str(cm.exception), 'Route callback for GET / '
                          'returned invalid value: int: 1000')
 
+    def test_redirect(self):
+        app = ice.Ice()
+
+        expected = '303 See Other'
+
+        @app.get('/')
+        def foo():
+            return 303, '/foo'
+
+        expected2 = '<p>Bar</p>'
+        @app.get('/bar')
+        def bar():
+            app.response.body = expected2
+            return 303, '/baz'
+
+        m = unittest.mock.Mock()
+        r = app({'REQUEST_METHOD': 'GET', 'PATH_INFO': '/'}, m)
+        m.assert_called_with(expected, [
+            ('Location', '/foo'),
+            ('Content-Type', 'text/plain; charset=UTF-8'),
+            ('Content-Length', str(len(expected)))
+        ])
+        self.assertEqual(r, [expected.encode()])
+
+        r = app({'REQUEST_METHOD': 'GET', 'PATH_INFO': '/bar'}, m)
+        m.assert_called_with(expected, [
+            ('Location', '/baz'),
+            ('Content-Type', 'text/html; charset=UTF-8'),
+            ('Content-Length', str(len(expected2)))
+        ])
+        self.assertEqual(r, [expected2.encode()])
+
     def test_run_and_exit(self):
         app = ice.Ice()
         threading.Thread(target=app.run).start()

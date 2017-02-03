@@ -6,10 +6,11 @@ ChangeLog
 - NEW: Rudimentary error message when no error handler is defined.
 - NEW: Return integer status code from a route's callable.
 - NEW: Wildcard pattern of path type, e.g. <:path>, to match paths.
-- NEW: static() method to return static files.
-- NEW: download() method to force client to download content.
+- NEW: Return static files using the static() method.
+- NEW: Send attachment to client using the download() method.
 - NEW: Cookies dictionary in request object.
-- NEW: set_cookie() method to set cookie to be sent to client.
+- NEW: Set cookie in response header using the set_cookie() method.
+- NEW: Send redirects by returning tuple of status code and URL.
 
 0.0.1 (2014-06-05)
 ------------------

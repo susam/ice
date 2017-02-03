@@ -500,6 +500,41 @@ class ExamplesTest(unittest.TestCase):
                       b'-- authorization will not help</p>\n',
                       cm.exception.read())
 
+    def test_redirect_example1(self):
+        app = self.app
+
+        @app.get('/foo')
+        def foo():
+            return 303, '/bar'
+
+        @app.get('/bar')
+        def bar():
+            return ('<!DOCTYPE html>'
+                    '<html><head><title>Bar</title></head>'
+                    '<body><p>Bar</p></body></html>')
+
+        self.run_app()
+        response = urllib.request.urlopen('http://localhost:8080/foo')
+        self.assertIn(b'<p>Bar</p>', response.read())
+
+    def test_redirect_example2(self):
+        app = self.app
+
+        @app.get('/foo')
+        def foo():
+            app.response.add_header('Location', '/bar')
+            return 303
+
+        @app.get('/bar')
+        def bar():
+            return ('<!DOCTYPE html>'
+                    '<html><head><title>Bar</title></head>'
+                    '<body><p>Bar</p></body></html>')
+
+        self.run_app()
+        response = urllib.request.urlopen('http://localhost:8080/foo')
+        self.assertIn(b'<p>Bar</p>', response.read())
+
     # Static file with media type guessing
     def test_static_file_example1(self):
         app = self.app
