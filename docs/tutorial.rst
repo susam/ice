@@ -694,6 +694,36 @@ input field, ``app.request.form.getall('name')`` returns strings entered
 in both input fields as a list object.
 
 
+Cookies
+-------
+The following example shows an application that can read and set
+cookies.
+
+.. code:: python
+
+    import ice
+    app = ice.cube()
+
+    @app.get('/')
+    def show_count():
+        count = int(app.request.cookies.get('count', 0)) + 1
+        app.response.set_cookie('count', str(count))
+        return ('<!DOCTYPE html>'
+                '<html><head><title>Foo</title></head><body>'
+                '<p>Count: {}</p></body></html>'.format(count))
+
+    app.run()
+
+The ``app.request.cookies`` object in this code, like the
+``app.request.query`` object in a previous section, is a MultiDict
+object. Every cookie name and value sent by the client to the
+application found in the HTTP Cookie header is available in this object
+as key value pairs.
+
+The ``app.response.set_cookie`` method is used to set cookies to be sent
+from the application to the client.
+
+
 Error Pages
 -----------
 The application object returned by the ``ice.cube`` function contains a

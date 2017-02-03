@@ -165,3 +165,10 @@ class RequestTest(unittest.TestCase):
         }
         r = ice.Request(environ)
         self.assertEqual(r.form.data, {'a': ['foo'], 'b': ['bar']})
+
+    def test_cookies(self):
+        environ = {
+            'HTTP_COOKIE': 'a=foo; b="bar"; c="baz qux"'
+        }
+        r = ice.Request(environ)
+        self.assertEqual(r.cookies, {'a': 'foo', 'b': 'bar', 'c': 'baz qux'})

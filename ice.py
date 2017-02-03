@@ -42,6 +42,7 @@ import re
 import cgi
 import urllib.parse
 import http.server
+import http.cookies
 import os
 import mimetypes
 
@@ -675,6 +676,7 @@ class Request:
       path (str): Request path.
       query (MultiDict): Key-value pairs from query string.
       form (MultiDict): Key-value pairs from form data in POST request.
+      cookies (MultiDict): Key-value pairs from cookie string.
     """
 
     def __init__(self, environ):
@@ -690,6 +692,7 @@ class Request:
             self.path = '/'
         self.query = MultiDict()
         self.form = MultiDict()
+        self.cookies = MultiDict()
 
         if 'QUERY_STRING' in environ:
             for k, v in urllib.parse.parse_qsl(environ['QUERY_STRING']):
@@ -701,6 +704,11 @@ class Request:
             for k in fs:
                 for v in fs.getlist(k):
                     self.form[k] = v
+
+        if 'HTTP_COOKIE' in environ:
+            cookies = http.cookies.SimpleCookie(environ['HTTP_COOKIE'])
+            for c in cookies.values():
+                self.cookies[c.key] = c.value
 
 class Response:
 
@@ -769,6 +777,24 @@ class Response:
         """
         if value is not None:
             self._headers.append((name, value))
+
+    def set_cookie(self, name, value, attrs={}):
+        """Add a Set-Cookie header to response object.
+
+        For a description about cookie attribute values, see
+        https://docs.python.org/3/library/http.cookies.html#http.cookies.Morsel.
+
+        Arguments:
+          name (str): Name of the cookie
+          value (str): Value of the cookie
+          attrs (dict): Dicitionary with cookie attribute keys and
+                        values.
+        """
+        cookie = http.cookies.SimpleCookie()
+        cookie[name] = value
+        for key, value in attrs.items():
+            cookie[name][key] = value
+        self.add_header('Set-Cookie', cookie[name].OutputString())
 
     @property
     def status_line(self):

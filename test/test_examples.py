@@ -381,6 +381,30 @@ class ExamplesTest(unittest.TestCase):
                       b"name (multi): ['Humpty', 'Santa']</p>",
                       response.read() )
 
+    def test_cookie_example(self):
+        app = self.app
+
+        @app.get('/')
+        def show_count():
+            count = int(app.request.cookies.get('count', 0)) + 1
+            app.response.set_cookie('count', str(count))
+            return ('<!DOCTYPE html>'
+                    '<html><head><title>Foo</title></head><body>'
+                    '<p>Count: {}</p></body></html>'.format(count))
+
+        # Test
+        self.run_app()
+        response = urllib.request.urlopen('http://localhost:8080/')
+        self.assertEqual(response.getheader('Set-Cookie'), 'count=1')
+        self.assertIn(b'<p>Count: 1</p>', response.read())
+
+        response = urllib.request.urlopen(
+            urllib.request.Request('http://localhost:8080/',
+            headers={'Cookie': 'count=1'}))
+        self.assertEqual(response.getheader('Set-Cookie'), 'count=2')
+        self.assertIn(b'<p>Count: 2</p>', response.read())
+
+
     def test_error_example(self):
         app = self.app
 
@@ -589,3 +613,4 @@ class ExamplesTest(unittest.TestCase):
         with self.assertRaises(urllib.error.HTTPError) as cm:
             r = urllib.request.urlopen('http://localhost:8080/foo/')
         self.assertEqual(cm.exception.code, 500)
+

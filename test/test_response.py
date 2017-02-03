@@ -102,3 +102,20 @@ class ResponseTest(unittest.TestCase):
             ('Content-Type', 'image/png'),
             ('Content-Length', '0'),
         ])
+
+    def test_cookies(self):
+        m = mock.Mock()
+        r = ice.Response(m)
+        r.set_cookie('a', 'foo')
+        r.set_cookie('b', 'bar', {'path': '/blog'})
+        r.set_cookie('c', 'baz', {'secure': True, 'httponly': True})
+        r.set_cookie('d', 'qux', {'PaTh': '/blog', 'SeCuRe': True})
+        r.response()
+        m.assert_called_with('200 OK', [
+            ('Set-Cookie', 'a=foo'),
+            ('Set-Cookie', 'b=bar; Path=/blog'),
+            ('Set-Cookie', 'c=baz; httponly; secure'),
+            ('Set-Cookie', 'd=qux; Path=/blog; secure'),
+            ('Content-Type', 'text/html; charset=UTF-8'),
+            ('Content-Length', '0')
+        ])
