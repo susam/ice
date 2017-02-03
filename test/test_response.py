@@ -111,7 +111,6 @@ class ResponseTest(unittest.TestCase):
         r.set_cookie('c', 'baz', {'secure': True, 'httponly': True})
         r.set_cookie('d', 'qux', {'PaTh': '/blog', 'SeCuRe': True})
         r.response()
-        m.assert_called()
         # The mock is called with the following arguments.
         #
         # ('200 OK', [
