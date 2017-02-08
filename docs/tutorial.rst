@@ -762,6 +762,8 @@ displays a page with the following text.
     | Page not found
 
 
+.. _status-codes:
+
 Status Codes
 ------------
 In all the examples above, the response message body is returned as a
@@ -880,15 +882,12 @@ displays a page with the following text.
     | Request forbidden -- authorization will not help
 
 
-.. _static-files:
-
-
 Redirects
 ---------
 Here is an example that demonstrates how to redirect a client to a
 different URL.
 
-..code:: python
+.. code:: python
 
     import ice
     app = ice.cube()
@@ -917,7 +916,7 @@ the second item is the URL to which the client should be redirected to.
 
 The behaviour of the above code is equivalent to the following code.
 
-..code:: python
+.. code:: python
 
     import ice
     app = ice.cube()
@@ -935,14 +934,16 @@ The behaviour of the above code is equivalent to the following code.
 
     app.run()
 
-Much of the discussion in the :ref:`status-code` section applies to this
-section too, i.e. it is possible to set the status code in
-``app.response.status``, add a Location header and return a
-message body, or add a Location header, set the message body in
+Much of the discussion in the :ref:`status-codes` section applies to
+this section too, i.e. it is possible to set the status code in
+``app.response.status``, add a Location header and return a message
+body, or add a Location header, set the message body in
 ``app.response.body`` and return a status code. However, returning a
 tuple of redirection status code and URL, as shown in the first example
 in this section, is the simplest and preferred way to send a redirect.
 
+
+.. _static-files:
 
 Static Files
 ------------
@@ -1137,3 +1138,42 @@ download a file foo.txt. However, visiting http://localhost:8080/foo/
 would display an error due to the unhandled ice.LogicError that is
 raised because no filename can be determined from the request path /foo/
 which refers to a directory, not a file.
+
+
+Request Environ
+---------------
+The following example shows how to access the ``environ`` dictionary
+defined in the `WSGI specification`_.
+
+.. _WSGI specification: https://www.python.org/dev/peps/pep-3333/#environ-variables
+
+.. code:: python
+
+    import ice
+    app = ice.cube()
+
+    @app.get('/')
+    def foo():
+        user_agent = app.request.environ.get('HTTP_USER_AGENT', None)
+        return ('<!DOCTYPE html>'
+                '<html><head><title>User Agent</title></head>'
+                '<body><p>{}</p></body></html>'.format(user_agent))
+
+    app.run()
+
+The ``environ`` dictionary specified in the WSGI specification is made
+available in ``app.request.environ``. The above example retrieves the
+HTTP User-Agent header from this dictionary and displays it to the
+client.
+
+
+More
+----
+Since this is a microframework with a very limited set of features,
+it is possible that you may find from time to time that this framework
+is missing a useful API that another major framework provides. In such a
+case, you have direct access to the WSGI internals to do what you want
+via the documented API (see :ref:`api`).
+
+If you believe that the missing feature would be useful to all users of
+this framework, please feel free to send a patch or a pull request.

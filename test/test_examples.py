@@ -649,3 +649,17 @@ class ExamplesTest(unittest.TestCase):
             r = urllib.request.urlopen('http://localhost:8080/foo/')
         self.assertEqual(cm.exception.code, 500)
 
+    def test_environ(self):
+        app = self.app
+
+        # Example
+        @app.get('/')
+        def foo():
+            user_agent = app.request.environ.get('HTTP_USER_AGENT', None)
+            return ('<!DOCTYPE html>'
+                    '<html><head><title>User Agent</title></head>'
+                    '<body><p>{}</p></body></html>'.format(user_agent))
+
+        # Test
+        self.run_app()
+        self.assert200('/', 'Python-urllib')
