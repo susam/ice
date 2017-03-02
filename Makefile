@@ -26,6 +26,10 @@ release:
 	$(PYTHON) setup.py register
 	$(PYTHON) setup.py sdist upload
 
+build-rtd:
+	# See http://docs.readthedocs.io/en/latest/webhooks.html#others
+	curl -XPOST http://readthedocs.org/build/icepy
+
 clean:
 	rm -rf build dist MANIFEST install.txt
 	rm -rf .coverage htmlcov
