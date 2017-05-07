@@ -1,5 +1,18 @@
 Tutorial
 ========
+Ice is a Python module with a WSGI microframework meant for developing
+small web applications in Python. It is a single file Python module
+inspired by `Bottle`_.
+
+.. _Bottle: https://bottlepy.org/
+
+You can install this module using pip3 using the following command. ::
+
+    pip3 install ice
+
+This module should be used with Python 3.3 or a later version of Python
+interpreter.
+
 
 Getting Started
 ---------------
