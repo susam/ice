@@ -13,6 +13,9 @@ You can install this module using pip3 using the following command. ::
 This module should be used with Python 3.3 or a later version of Python
 interpreter.
 
+The source code of this module is available at
+https://github.com/susam/ice.
+
 
 Getting Started
 ---------------
