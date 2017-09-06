@@ -29,7 +29,7 @@ Python web applications.
 """
 
 
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 __date__ = '25 March 2014'
 __author__ = 'Susam Pal <susam@susam.in>'
 __credits__ = ('Marcel Hellkamp, for writing bottle, the inspiration '
