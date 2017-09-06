@@ -1,14 +1,46 @@
 Ice - WSGI on the rocks
 =======================
-
 Ice is a Python module with a WSGI microframework meant for developing
-small web applications in Python.
+small web applications in Python. It is a single file Python module
+inspired by `Bottle`_.
 
 .. image:: https://travis-ci.org/susam/ice.svg?branch=master
    :target: https://travis-ci.org/susam/ice
 
 .. image:: https://coveralls.io/repos/susam/ice/badge.svg?branch=master
    :target: https://coveralls.io/r/susam/ice?branch=master
+
+
+Why Ice?
+--------
+This microframework was born as a result of experimenting with WSGI
+framework. Since what started as a small experiment turned out to be
+several hundred lines of code, it made sense to share the source code on
+the web, just in case anyone else benefits from it.
+
+This microframework has a very limited set of features currently. It may
+be used to develop small web applications. For large web applications,
+it may make more sense to use a more wholesome framework such as
+`Flask`_ or `Django`_.
+
+It is possible that you may find that this framework is missing a useful
+API that another major framework provides. In such a case, you have
+direct access to the WSGI internals to do what you want via the
+documented `API`_.
+
+If you believe that a missing feature or a bug fix would be useful to
+others, you may `report an issue`_, or even better, fork this `project
+on GitHub`_, develop the missing feature or the bug fix, and send a
+patch or a pull request. In fact, you are very welcome to do so, and
+turn this experimental project into a matured one by contributing your
+code and expertise.
+
+.. _Bottle: https://bottlepy.org/
+.. _Flask: http://flask.pocoo.org/
+.. _Django: https://www.djangoproject.com/
+.. _API: http://icepy.readthedocs.io/en/latest/ice.html
+.. _report an issue: https://github.com/susam/ice/issues
+.. _project on GitHub: https://github.com/susam/ice
 
 
 Requirements
@@ -53,7 +85,7 @@ Here is a list of useful links about this project.
 Support
 -------
 To report bugs, suggest improvements, or ask questions, please create a
-new issue at http://github.com/susam/vimer/issues.
+new issue at http://github.com/susam/ice/issues.
 
 
 License
