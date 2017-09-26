@@ -10,6 +10,9 @@ inspired by `Bottle`_.
 .. image:: https://coveralls.io/repos/susam/ice/badge.svg?branch=master
    :target: https://coveralls.io/r/susam/ice?branch=master
 
+.. image:: https://img.shields.io/badge/license-MIT-blue.svg
+   :target: LICENSE.rst
+
 
 Why Ice?
 --------
@@ -98,4 +101,4 @@ This software is provided WITHOUT ANY WARRANTY; without even the implied
 warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
 `LICENSE.rst`_ for the complete disclaimer.
 
-.. _LICENSE.rst: https://github.com/susam/ice/blob/master/LICENSE.rst
+.. _LICENSE.rst: LICENSE.rst
